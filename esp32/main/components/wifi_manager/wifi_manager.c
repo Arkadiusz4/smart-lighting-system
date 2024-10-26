@@ -17,6 +17,10 @@ static const char *TAG = "wifi_manager";
 static bool wifi_connected = false;
 static TaskHandle_t led_task_handle = NULL;
 
+bool wifi_manager_is_connected(void) {
+    return wifi_connected;
+}
+
 void led_task(void *param) {
     while (1) {
         if (!wifi_connected) {

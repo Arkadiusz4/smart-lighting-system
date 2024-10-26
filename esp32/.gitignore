@@ -5,3 +5,5 @@ build/
 cmake-build-debug/
 sdkconfig
 sdkconfig.old
+
+main/components/http_client/include/certs.h

@@ -4,6 +4,13 @@
 #include "freertos/task.h"
 #include "esp_tls.h"
 
+void http_request_task(void *pvParameters) {
+    esp_tls_init_global_ca_store();
+    http_client_get("https://example.com");
+    esp_tls_free_global_ca_store();
+    vTaskDelete(NULL);
+}
+
 void app_main(void) {
     wifi_manager_init();
 
@@ -11,7 +18,5 @@ void app_main(void) {
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 
-    esp_tls_init_global_ca_store();
-    http_client_get("https://www.onet.pl");
-    esp_tls_free_global_ca_store();
+    xTaskCreate(&http_request_task, "http_request_task", 8192, NULL, 5, NULL);
 }

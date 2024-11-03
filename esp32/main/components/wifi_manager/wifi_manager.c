@@ -123,8 +123,7 @@ void wifi_manager_init(void) {
                         .channel = 1,
                         .password = "config123",
                         .max_connection = 4,
-                        .authmode = WIFI_AUTH_WPA_WPA2_PSK
-                },
+                        .authmode = WIFI_AUTH_WPA_WPA2_PSK},
         };
 
         ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config));

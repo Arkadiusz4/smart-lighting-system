@@ -1,63 +1,3 @@
-[//]: # (# Secure Storage of Certificate)
-
-[//]: # ()
-
-[//]: # (This project requires the certificate file `main/components/http_client/include/certs.h`, but we do not store it in the)
-
-[//]: # (repository in plain text for security reasons. Below, you’ll find instructions on how to encrypt and decrypt this file.)
-
-[//]: # ()
-
-[//]: # (## Instructions for Encrypting and Decrypting the Certificate File)
-
-[//]: # ()
-
-[//]: # (### Prerequisites)
-
-[//]: # ()
-
-[//]: # (We use `openssl` to encrypt and decrypt the file, which is typically available on most operating systems. If you don’t)
-
-[//]: # (have `openssl`, please install it according to your system requirements.)
-
-[//]: # ()
-
-[//]: # (### Step 1: Encrypting the `certs.h` File)
-
-[//]: # ()
-
-[//]: # (1. Place the certificate file at `main/components/http_client/include/certs.h`.)
-
-[//]: # (2. Run the following command to encrypt the file:)
-
-[//]: # (   ```bash)
-
-[//]: # (   openssl enc -aes-256-cbc -salt -in main/components/http_client/include/certs.h -out main/components/http_client/include/certs.h.enc -k <password>)
-
-[//]: # (   ```)
-
-[//]: # (   Replace <password> with the password you wish to use for encryption.)
-
-[//]: # ()
-
-[//]: # (### Step 2: Decrypting the `certs.h.enc` File)
-
-[//]: # ()
-
-[//]: # (1. To use the certificate, decrypt the file first:)
-
-[//]: # (   ```bash)
-
-[//]: # (   openssl enc -aes-256-cbc -d -in main/components/http_client/include/certs.h.enc -out main/components/http_client/include/certs.h -k <password>)
-
-[//]: # (   ```)
-
-[//]: # (   Enter the same password used for encryption.)
-
-[//]: # (2. The `certs.h` file will now be available for use in your application.)
-
-[//]: # ()
-
 # IoT Lighting Control System for ESP32-S3
 
 This project implements a secure IoT lighting control system using the ESP32-S3 microcontroller. The setup includes a
@@ -67,14 +7,6 @@ communication.
 ---
 
 ## Table of Contents
-
-[//]: # (1. [Example]&#40;#example&#41;)
-
-[//]: # (2. [Example2]&#40;#example2&#41;)
-
-[//]: # (3. [Third Example]&#40;#third-example&#41;)
-
-[//]: # (4. [Fourth Example]&#40;#fourth-examplehttpwwwfourthexamplecom&#41;)
 
 1. [Project overview](#project-overview)
 2. [Prerequisites](#prerequisites)
@@ -215,6 +147,8 @@ TARGET := esp32s3
   make all
   ```
 
+---
+
 ## Example workflow
 
 ### Initial Setup and Full Build
@@ -233,6 +167,8 @@ After the initial setup, you can simplify with:
 ```bash
 make flash
 ```
+
+---
 
 ## Color-coded output
 

@@ -29,8 +29,13 @@ void led_task(void *param) {
             gpio_set_level(LED_GPIO_PIN, 0);
             vTaskDelay(500 / portTICK_PERIOD_MS);
         } else {
-            gpio_set_level(LED_GPIO_PIN, 0);
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            for (int i = 0; i < 10; i++) {
+                if (!wifi_connected) {
+                    break;
+                }
+                gpio_set_level(LED_GPIO_PIN, 0);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
+            }
         }
     }
 }
@@ -42,6 +47,10 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
             case WIFI_EVENT_STA_START:
                 esp_wifi_connect();
                 break;
+            case WIFI_EVENT_STA_CONNECTED:
+                ESP_LOGI(TAG, "Połączono z siecią Wi-Fi.");
+                wifi_connected = true;
+                break;
             case WIFI_EVENT_STA_DISCONNECTED:
                 ESP_LOGI(TAG, "Odłączono od sieci Wi-Fi, ponawiam próbę połączenia...");
                 wifi_connected = false;
@@ -50,18 +59,12 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
             default:
                 break;
         }
-    } else if (event_base == IP_EVENT && event_id == IP_EVENT_STA_GOT_IP) {
-        ip_event_got_ip_t *event = (ip_event_got_ip_t *) event_data;
-        ESP_LOGI(TAG, "Uzyskano adres IP: "
-        IPSTR, IP2STR(&event->ip_info.ip));
-        wifi_connected = true;
     }
 }
 
 void wifi_manager_init(void) {
     esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
-        ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_ERROR_CHECK(nvs_flash_erase());
         ret = nvs_flash_init();
     }
@@ -70,7 +73,10 @@ void wifi_manager_init(void) {
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
-    esp_netif_t *netif = NULL;
+    esp_netif_t *netif_sta = esp_netif_create_default_wifi_sta();
+    esp_netif_t *netif_ap = esp_netif_create_default_wifi_ap();
+    assert(netif_sta && netif_ap);
+
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
@@ -91,47 +97,36 @@ void wifi_manager_init(void) {
 
     xTaskCreate(led_task, "LED Task", 2048, NULL, 5, &led_task_handle);
 
+    wifi_config_t wifi_ap_config = {
+            .ap = {
+                    .ssid = "ESP32-Config",
+                    .ssid_len = strlen("ESP32-Config"),
+                    .channel = 1,
+                    .password = "config123",
+                    .max_connection = 4,
+                    .authmode = WIFI_AUTH_WPA_WPA2_PSK
+            },
+    };
+
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config));
+
     char ssid[32] = {0};
     char password[64] = {0};
     if (load_wifi_credentials(ssid, sizeof(ssid), password, sizeof(password)) == ESP_OK) {
         ESP_LOGI(TAG, "Znaleziono zapisane dane Wi-Fi, łączenie z siecią: %s", ssid);
-
-        netif = esp_netif_create_default_wifi_sta();
-        assert(netif);
-
-        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
 
         wifi_config_t wifi_sta_config = {0};
         strcpy((char *) wifi_sta_config.sta.ssid, ssid);
         strcpy((char *) wifi_sta_config.sta.password, password);
 
         ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config));
-
-        ESP_ERROR_CHECK(esp_wifi_start());
     } else {
-        ESP_LOGI(TAG, "Brak zapisanych danych Wi-Fi, uruchamianie w trybie Access Point");
-
-        netif = esp_netif_create_default_wifi_ap();
-        assert(netif);
-
-        ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-
-        wifi_config_t wifi_ap_config = {
-                .ap = {
-                        .ssid = "ESP32-Config",
-                        .ssid_len = strlen("ESP32-Config"),
-                        .channel = 1,
-                        .password = "config123",
-                        .max_connection = 4,
-                        .authmode = WIFI_AUTH_WPA_WPA2_PSK},
-        };
-
-        ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_ap_config));
-
-        ESP_ERROR_CHECK(esp_wifi_start());
-
-        start_webserver();
+        ESP_LOGI(TAG, "Brak zapisanych danych Wi-Fi, uruchamianie tylko Access Point");
     }
+
+    ESP_ERROR_CHECK(esp_wifi_start());
+    start_webserver();
 }
 
 void save_wifi_credentials(const char *ssid, const char *password) {

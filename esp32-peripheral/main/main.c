@@ -1,23 +1,21 @@
-// main/main.c
-
-#include <stdio.h>
-#include "esp_log.h"
 #include "ble_init.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+#include "temperature.h"
 #include "esp_log.h"
-#include "driver/temperature_sensor.h"
-static const char *TAG = "MAIN";
 
-void app_main(void)
-{
+void app_main(void) {
     esp_err_t ret;
 
-    ret = ble_init();
+    ret = temperature_init();
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "BLE initialization failed");
+        ESP_LOGE("MAIN", "Inicjalizacja Temperature nie powiodła się: %s", esp_err_to_name(ret));
         return;
     }
 
-    ESP_LOGI(TAG, "BLE initialized successfully");
+    ret = ble_init();
+    if (ret != ESP_OK) {
+        ESP_LOGE("MAIN", "Inicjalizacja BLE nie powiodła się: %s", esp_err_to_name(ret));
+        return;
+    }
+
+    ESP_LOGI("MAIN", "Aplikacja zainicjalizowana pomyślnie.");
 }

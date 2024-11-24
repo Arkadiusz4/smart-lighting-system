@@ -25,9 +25,6 @@
 
 static bool connect = false;
 static bool get_server = false;
-static uint16_t remote_notify_char_handle = 0;
-// Remove or comment out if unused
-// static uint16_t descr_handle = 0;
 
 static esp_ble_scan_params_t ble_scan_params = {
     .scan_type              = BLE_SCAN_TYPE_ACTIVE,
@@ -60,6 +57,30 @@ static struct gattc_profile_inst gl_profile_tab[PROFILE_NUM] = {
     },
 };
 
+// Global variables
+static esp_gatt_if_t gattc_if_global = 0;
+static uint16_t conn_id_global = 0;
+static uint16_t char_handle_global = 0;
+static bool connected = false;
+
+static void periodic_read_task(void *arg)
+{
+    while (1) {
+        if (connected && char_handle_global != 0) {
+            esp_err_t ret = esp_ble_gattc_read_char(gattc_if_global,
+                                                    conn_id_global,
+                                                    char_handle_global,
+                                                    ESP_GATT_AUTH_REQ_NONE);
+            if (ret != ESP_OK) {
+                ESP_LOGE(TAG, "Failed to read characteristic: %s", esp_err_to_name(ret));
+            }
+        } else {
+            ESP_LOGW(TAG, "Not connected or characteristic handle invalid");
+        }
+        vTaskDelay(pdMS_TO_TICKS(5000)); // Read every 5 seconds
+    }
+}
+
 static void gattc_event_handler(esp_gattc_cb_event_t event,
                                 esp_gatt_if_t gattc_if,
                                 esp_ble_gattc_cb_param_t *param) {
@@ -74,6 +95,10 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
         gl_profile_tab[PROFILE_APP_ID].conn_id = param->connect.conn_id;
         memcpy(gl_profile_tab[PROFILE_APP_ID].remote_bda, param->connect.remote_bda, sizeof(esp_bd_addr_t));
         esp_ble_gattc_search_service(gattc_if, param->connect.conn_id, NULL);
+
+        gattc_if_global = gattc_if;
+        conn_id_global = param->connect.conn_id;
+        connected = true;
         break;
     case ESP_GATTC_OPEN_EVT:
         if (param->open.status == ESP_GATT_OK) {
@@ -83,6 +108,7 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
             ESP_LOGE(TAG, "Failed to connect, error status = %d", param->open.status);
             connect = false;
             get_server = false;
+            connected = false;
         }
         break;
     case ESP_GATTC_SEARCH_RES_EVT:
@@ -130,7 +156,8 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
                         ESP_LOGE(TAG, "esp_ble_gattc_get_char_by_uuid error");
                     }
                     if (count > 0 && char_elem_result != NULL) {
-                        remote_notify_char_handle = char_elem_result[0].char_handle;
+                        uint16_t remote_notify_char_handle = char_elem_result[0].char_handle;
+                        char_handle_global = remote_notify_char_handle;
                         ESP_LOGI(TAG, "Characteristic found, handle: %d", remote_notify_char_handle);
 
                         // Proceed to read the characteristic
@@ -138,6 +165,9 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
                                                 gl_profile_tab[PROFILE_APP_ID].conn_id,
                                                 remote_notify_char_handle,
                                                 ESP_GATT_AUTH_REQ_NONE);
+
+                        // Start the periodic read task
+                        xTaskCreate(periodic_read_task, "periodic_read_task", 2048, NULL, 5, NULL);
                     } else {
                         ESP_LOGE(TAG, "Characteristic not found");
                     }
@@ -158,29 +188,25 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
         ESP_LOGI(TAG, "Characteristic value:");
         esp_log_buffer_hex(TAG, param->read.value, param->read.value_len);
 
-        // Write to the characteristic
-        uint8_t write_value = 0x55; // Example value
-        esp_ble_gattc_write_char(gattc_if,
-                                 gl_profile_tab[PROFILE_APP_ID].conn_id,
-                                 remote_notify_char_handle,
-                                 sizeof(write_value),
-                                 &write_value,
-                                 ESP_GATT_WRITE_TYPE_RSP,
-                                 ESP_GATT_AUTH_REQ_NONE);
-        break;
-    case ESP_GATTC_WRITE_CHAR_EVT:
-        if (param->write.status != ESP_GATT_OK) {
-            ESP_LOGE(TAG, "Failed to write characteristic, error status = %d", param->write.status);
-            break;
+        // Check if the value length is 2 bytes
+        if (param->read.value_len == 2) {
+            // Parse the 2-byte little-endian value
+            uint16_t temp_raw = param->read.value[0] | (param->read.value[1] << 8);
+            // Convert to float temperature
+            float temperature = temp_raw / 100.0;
+            ESP_LOGI(TAG, "Received temperature from ESP32-C3: %.2f ℃", temperature);
+        } else {
+            ESP_LOGE(TAG, "Unexpected value length: %d", param->read.value_len);
         }
-        ESP_LOGI(TAG, "Characteristic written successfully");
         break;
     case ESP_GATTC_DISCONNECT_EVT:
         ESP_LOGI(TAG, "ESP_GATTC_DISCONNECT_EVT, reason = %d", param->disconnect.reason);
         connect = false;
         get_server = false;
+        connected = false;
         break;
     default:
+        ESP_LOGI(TAG, "GATTC event: %d", event);
         break;
     }
 }
@@ -237,6 +263,7 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
         }
         break;
     default:
+        ESP_LOGI(TAG, "GAP event: %d", event);
         break;
     }
 }

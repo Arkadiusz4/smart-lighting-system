@@ -1,5 +1,5 @@
 idf_component_register(
     SRCS "ble_init.c"
     INCLUDE_DIRS "include"
-    REQUIRES bt
+    REQUIRES led_control bt
 )

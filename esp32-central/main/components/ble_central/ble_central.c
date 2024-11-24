@@ -11,8 +11,8 @@
 #define REMOTE_DEVICE_NAME "ESP32-C3-BLE"
 #define PROFILE_APP_ID 0
 
-#define REMOTE_SERVICE_UUID        0x00FF
-#define REMOTE_CHAR_UUID           0xFF01
+#define REMOTE_SERVICE_UUID 0x00FF
+#define REMOTE_CHAR_UUID 0xFF01
 
 static bool connect = false;
 static bool get_server = false;
@@ -25,13 +25,21 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
                                 esp_ble_gattc_cb_param_t *param);
 
 static esp_ble_scan_params_t ble_scan_params = {
-        .scan_type              = BLE_SCAN_TYPE_ACTIVE,
-        .own_addr_type          = BLE_ADDR_TYPE_PUBLIC,
-        .scan_filter_policy     = BLE_SCAN_FILTER_ALLOW_ALL,
-        .scan_interval          = 0x50,
-        .scan_window            = 0x30,
-        .scan_duplicate         = BLE_SCAN_DUPLICATE_DISABLE
-};
+        .scan_type = BLE_SCAN_TYPE_ACTIVE,
+        .own_addr_type = BLE_ADDR_TYPE_PUBLIC,
+        .scan_filter_policy = BLE_SCAN_FILTER_ALLOW_ALL,
+        .scan_interval = 0x50,
+        .scan_window = 0x30,
+        .scan_duplicate = BLE_SCAN_DUPLICATE_DISABLE};
+
+static char *bda2str(esp_bd_addr_t bda, char *str, size_t size) {
+    if (size < 18) {
+        return NULL;
+    }
+    snprintf(str, size, "%02X:%02X:%02X:%02X:%02X:%02X",
+             bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
+    return str;
+}
 
 esp_err_t ble_central_init(void) {
     esp_err_t ret;
@@ -201,6 +209,16 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
                     uint8_t adv_name_len = 0;
                     adv_name = esp_ble_resolve_adv_data(scan_result->scan_rst.ble_adv,
                                                         ESP_BLE_AD_TYPE_NAME_CMPL, &adv_name_len);
+
+                    char bda_str[18];
+                    bda2str(scan_result->scan_rst.bda, bda_str, sizeof(bda_str));
+                    if (adv_name != NULL) {
+                        ESP_LOGI(TAG, "Device found: %.*s, Addr: %s, RSSI: %d", adv_name_len, adv_name, bda_str,
+                                 scan_result->scan_rst.rssi);
+                    } else {
+                        ESP_LOGI(TAG, "Device found: <unknown>, Addr: %s, RSSI: %d", bda_str,
+                                 scan_result->scan_rst.rssi);
+                    }
 
                     if (adv_name != NULL && strlen(REMOTE_DEVICE_NAME) == adv_name_len &&
                         strncmp((char *) adv_name, REMOTE_DEVICE_NAME, adv_name_len) == 0) {

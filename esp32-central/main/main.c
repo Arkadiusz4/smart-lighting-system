@@ -5,11 +5,11 @@
 void app_main(void) {
     esp_err_t ret;
 
-    ret = ble_client_init();
+    ret = ble_central_init();
     if (ret != ESP_OK) {
-        ESP_LOGE("MAIN", "Failed to initialize BLE Client: %s", esp_err_to_name(ret));
+        ESP_LOGE("MAIN", "Failed to initialize BLE Central: %s", esp_err_to_name(ret));
         return;
     }
 
-    ESP_LOGI("MAIN", "BLE Client initialized successfully.");
+    ESP_LOGI("MAIN", "BLE Central initialized successfully.");
 }

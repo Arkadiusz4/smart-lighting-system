@@ -9,7 +9,7 @@
 #define TAG "BLE_INIT"
 #define DEVICE_NAME "ESP32-C3-BLE"
 
-static esp_ble_adv_params_t adv_params = {
+esp_ble_adv_params_t adv_params = {
         .adv_int_min       = 0x20,
         .adv_int_max       = 0x40,
         .adv_type          = ADV_TYPE_IND,

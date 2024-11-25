@@ -1,3 +1,4 @@
+#include "ble_init.h"
 #include "gatt_server.h"
 #include "temperature.h"
 #include "esp_log.h"
@@ -13,6 +14,8 @@
 #define GATTS_SERVICE_UUID_TEST   0x00FF
 #define GATTS_CHAR_UUID_TEST_A    0xFF01
 #define GATTS_NUM_HANDLE_TEST     4
+
+extern esp_ble_adv_params_t adv_params;
 
 static uint16_t service_handle = 0;
 static esp_gatt_srvc_id_t service_id = {
@@ -133,6 +136,19 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
 
             esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
                                         ESP_GATT_OK, &rsp);
+            break;
+
+        case ESP_GATTS_CONNECT_EVT:
+            ESP_LOGI(TAG, "Device connected, conn_id: %d", param->connect.conn_id);
+            break;
+
+        case ESP_GATTS_DISCONNECT_EVT:
+            ESP_LOGI(TAG, "Device disconnected, restarting advertising");
+
+            ret = esp_ble_gap_start_advertising(&adv_params);
+            if (ret) {
+                ESP_LOGE(TAG, "Failed to start advertising: %s", esp_err_to_name(ret));
+            }
             break;
 
         default:

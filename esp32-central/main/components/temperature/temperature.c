@@ -3,6 +3,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "gatt_client.h"
+#include "mqtt_broker.h"
 
 #define TAG "TEMPERATURE"
 
@@ -33,10 +34,16 @@ void handle_temperature_data(uint8_t *data, uint16_t length) {
         uint16_t temp_raw = data[0] | (data[1] << 8);
         float temperature = temp_raw / 100.0;
         ESP_LOGI(TAG, "Received temperature: %.2f ℃", temperature);
+
+        char temp_str[16];
+        snprintf(temp_str, sizeof(temp_str), "%.2f", temperature);
+
+        mqtt_publish("user123/esp32_1/temperature", temp_str);
     } else {
         ESP_LOGE(TAG, "Unexpected value length: %d", length);
     }
 }
+
 
 void temperature_init(void) {
     xTaskCreate(periodic_read_task, "periodic_read_task", 4096, NULL, 5, NULL);

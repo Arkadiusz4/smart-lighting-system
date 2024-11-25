@@ -180,6 +180,17 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
             connect = false;
             get_server = false;
             connected = false;
+
+            esp_err_t ret = esp_ble_gap_set_scan_params(&ble_scan_params);
+            if (ret != ESP_OK) {
+                ESP_LOGE(TAG, "Failed to set scan parameters: %s", esp_err_to_name(ret));
+            }
+
+            ESP_LOGI(TAG, "Disconnected, restarting scan");
+            ret = esp_ble_gap_start_scanning(60);
+            if (ret != ESP_OK) {
+                ESP_LOGE(TAG, "Failed to start scanning: %s", esp_err_to_name(ret));
+            }
             break;
         default:
             ESP_LOGI(TAG, "GATTC event: %d", event);

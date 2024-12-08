@@ -48,5 +48,4 @@ void oled_draw_bitmap(const uint8_t *bitmap, int x, int y, int width, int height
 
 void oled_demo();
 
-
 #endif // OLED_DISPLAY_H

@@ -10,6 +10,7 @@
 #include "driver/gpio.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "oled_display.h"
 
 #define LED_GPIO_PIN GPIO_NUM_4
 
@@ -46,15 +47,24 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
         switch (event_id) {
             case WIFI_EVENT_STA_START:
                 esp_wifi_connect();
+                oled_clear_display();
+                oled_draw_text(0, 0, "Wi-Fi Starting...");
+                oled_update_display();
                 break;
             case WIFI_EVENT_STA_CONNECTED:
                 ESP_LOGI(TAG, "Połączono z siecią Wi-Fi.");
                 wifi_connected = true;
+                oled_clear_display();
+                oled_draw_text(0, 0, "Wi-Fi Connected!");
+                oled_update_display();
                 break;
             case WIFI_EVENT_STA_DISCONNECTED:
                 ESP_LOGI(TAG, "Odłączono od sieci Wi-Fi, ponawiam próbę połączenia...");
                 wifi_connected = false;
                 esp_wifi_connect();
+                oled_clear_display();
+                oled_draw_text(0, 0, "Wi-Fi Disconnected");
+                oled_update_display();
                 break;
             default:
                 break;
@@ -95,6 +105,12 @@ void wifi_manager_init(void) {
     gpio_set_direction(LED_GPIO_PIN, GPIO_MODE_OUTPUT);
     gpio_set_level(LED_GPIO_PIN, 0);
 
+    oled_i2c_init(GPIO_NUM_35, GPIO_NUM_41);
+    oled_init();
+    oled_clear_display();
+    oled_draw_text(0, 0, "Starting Wi-Fi...");
+    oled_update_display();
+
     xTaskCreate(led_task, "LED Task", 2048, NULL, 5, &led_task_handle);
 
     wifi_config_t wifi_ap_config = {
@@ -104,8 +120,7 @@ void wifi_manager_init(void) {
                     .channel = 1,
                     .password = "config123",
                     .max_connection = 4,
-                    .authmode = WIFI_AUTH_WPA_WPA2_PSK
-            },
+                    .authmode = WIFI_AUTH_WPA_WPA2_PSK},
     };
 
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA));
@@ -121,8 +136,16 @@ void wifi_manager_init(void) {
         strcpy((char *) wifi_sta_config.sta.password, password);
 
         ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_sta_config));
+        oled_clear_display();
+        oled_draw_text(0, 0, "Connecting...");
+        oled_draw_text(0, 16, ssid);
+        oled_update_display();
     } else {
         ESP_LOGI(TAG, "Brak zapisanych danych Wi-Fi, uruchamianie tylko Access Point");
+        oled_clear_display();
+        oled_draw_text(0, 0, "AP Mode:");
+        oled_draw_text(0, 16, "ESP32-Config");
+        oled_update_display();
     }
 
     ESP_ERROR_CHECK(esp_wifi_start());
@@ -140,6 +163,10 @@ void save_wifi_credentials(const char *ssid, const char *password) {
     nvs_close(nvs_handle);
 
     ESP_LOGI(TAG, "Dane Wi-Fi zapisane w NVS");
+    oled_clear_display();
+    oled_draw_text(0, 0, "Wi-Fi Credentials:");
+    oled_draw_text(0, 16, "Saved!");
+    oled_update_display();
 }
 
 esp_err_t load_wifi_credentials(char *ssid, size_t ssid_size, char *password, size_t password_size) {
@@ -157,5 +184,13 @@ esp_err_t load_wifi_credentials(char *ssid, size_t ssid_size, char *password, si
 
     err = nvs_get_str(nvs_handle, "password", password, &password_size);
     nvs_close(nvs_handle);
+
+    if (err == ESP_OK) {
+        oled_clear_display();
+        oled_draw_text(0, 0, "Wi-Fi Credentials:");
+        oled_draw_text(0, 16, "Loaded!");
+        oled_update_display();
+    }
+
     return err;
 }

@@ -2,6 +2,7 @@
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include "wifi_manager.h"
+#include "oled_display.h"
 #include <string.h>
 #include <ctype.h>
 
@@ -57,6 +58,12 @@ static esp_err_t get_handler(httpd_req_t *req) {
                            "</body>"
                            "</html>";
     httpd_resp_send(req, resp_str, strlen(resp_str));
+
+    oled_clear_display();
+    oled_draw_text(0, 0, "Wi-Fi Config Portal");
+    oled_draw_text(0, 16, "Ready to connect");
+    oled_update_display();
+
     return ESP_OK;
 }
 
@@ -119,7 +126,17 @@ static esp_err_t post_handler(httpd_req_t *req) {
                            "</html>";
     httpd_resp_send(req, resp_str, strlen(resp_str));
 
+    oled_clear_display();
+    oled_draw_text(0, 0, "Wi-Fi Credentials:");
+    oled_draw_text(0, 16, ssid);
+    oled_draw_text(0, 32, "Saved!");
+    oled_update_display();
+
     vTaskDelay(2000 / portTICK_PERIOD_MS);
+
+    oled_clear_display();
+    oled_draw_text(0, 0, "Restarting...");
+    oled_update_display();
 
     esp_restart();
 
@@ -145,7 +162,15 @@ void start_webserver(void) {
         httpd_register_uri_handler(server, &uri_get);
         httpd_register_uri_handler(server, &uri_post);
         ESP_LOGI(TAG, "Serwer HTTP uruchomiony");
+
+        oled_clear_display();
+        oled_draw_text(0, 8, "HTTP Server: Started");
+        oled_update_display();
     } else {
         ESP_LOGE(TAG, "Nie udało się uruchomić serwera HTTP");
+
+        oled_clear_display();
+        oled_draw_text(0, 8, "HTTP Server: Error!");
+        oled_update_display();
     }
 }

@@ -18,15 +18,14 @@ class LoginScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
-            if (state is AuthAuthenticated) {
-              Navigator.pushReplacementNamed(context, '/home');
-            } else if (state is AuthError) {
+            if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message)),
               );
             }
           },
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextField(
                 controller: emailController,
@@ -45,9 +44,12 @@ class LoginScreen extends StatelessWidget {
                   }
                   return ElevatedButton(
                     onPressed: () {
+                      final email = emailController.text.trim();
+                      final password = passwordController.text.trim();
+                      print('LoginScreen: Emitting AuthLoggedIn');
                       context.read<AuthBloc>().add(AuthLoggedIn(
-                            email: emailController.text,
-                            password: passwordController.text,
+                            email: email,
+                            password: password,
                           ));
                     },
                     child: const Text('Zaloguj się'),

@@ -19,52 +19,65 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   Future<void> _onStarted(AuthStarted event, Emitter<AuthState> emit) async {
     final User? user = _authRepository.currentUser;
     if (user != null) {
+      print('AuthStarted: User is authenticated');
       emit(AuthAuthenticated(user: user));
     } else {
+      print('AuthStarted: User is unauthenticated');
       emit(AuthUnauthenticated());
     }
   }
 
   Future<void> _onLoggedIn(AuthLoggedIn event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
+    print('AuthLoggedIn: Attempting to log in user with email ${event.email}');
     try {
       final User? user = await _authRepository.signIn(
         email: event.email,
         password: event.password,
       );
       if (user != null) {
+        print('AuthLoggedIn: User logged in');
         emit(AuthAuthenticated(user: user));
       } else {
+        print('AuthLoggedIn: User is unauthenticated');
         emit(AuthUnauthenticated());
       }
     } catch (e) {
+      print('AuthLoggedIn Error: $e');
       emit(AuthError(message: e.toString()));
     }
   }
 
   Future<void> _onRegistered(AuthRegistered event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
+    print('AuthRegistered: Attempting to register user with email ${event.email}');
     try {
       final User? user = await _authRepository.signUp(
         email: event.email,
         password: event.password,
       );
       if (user != null) {
+        print('AuthRegistered: User registered and authenticated');
         emit(AuthAuthenticated(user: user));
       } else {
+        print('AuthRegistered: User is unauthenticated');
         emit(AuthUnauthenticated());
       }
     } catch (e) {
+      print('AuthRegistered Error: $e');
       emit(AuthError(message: e.toString()));
     }
   }
 
   Future<void> _onLoggedOut(AuthLoggedOut event, Emitter<AuthState> emit) async {
     emit(AuthLoading());
+    print('AuthLoggedOut: Attempting to log out user');
     try {
       await _authRepository.signOut();
+      print('AuthLoggedOut: User logged out');
       emit(AuthUnauthenticated());
     } catch (e) {
+      print('AuthLoggedOut Error: $e');
       emit(AuthError(message: e.toString()));
     }
   }

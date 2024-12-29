@@ -18,15 +18,14 @@ class RegisterScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: BlocListener<AuthBloc, AuthState>(
           listener: (context, state) {
-            if (state is AuthAuthenticated) {
-              Navigator.pushReplacementNamed(context, '/home');
-            } else if (state is AuthError) {
+            if (state is AuthError) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(state.message)),
               );
             }
           },
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               TextField(
                 controller: emailController,
@@ -45,10 +44,19 @@ class RegisterScreen extends StatelessWidget {
                   }
                   return ElevatedButton(
                     onPressed: () {
-                      context.read<AuthBloc>().add(AuthRegistered(
-                            email: emailController.text,
-                            password: passwordController.text,
-                          ));
+                      final email = emailController.text.trim();
+                      final password = passwordController.text.trim();
+                      if (email.isNotEmpty && password.isNotEmpty) {
+                        print('RegisterScreen: Emitting AuthRegistered');
+                        context.read<AuthBloc>().add(AuthRegistered(
+                              email: email,
+                              password: password,
+                            ));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Proszę wprowadzić email i hasło')),
+                        );
+                      }
                     },
                     child: const Text('Zarejestruj się'),
                   );

@@ -27,18 +27,20 @@ class MyApp extends StatelessWidget {
           routes: {
             '/login': (context) => LoginScreen(),
             '/register': (context) => RegisterScreen(),
-            '/home': (context) => const HomeScreen(),
           },
           home: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
+              print('app.dart: Current AuthState: $state');
               if (state is AuthAuthenticated) {
-                return const HomeScreen();
+                print('app.dart: Navigating to HomeScreen with user: ${state.user.email}');
+                return HomeScreen(user: state.user);
               } else if (state is AuthLoading) {
                 return const Scaffold(
                   body: Center(child: CircularProgressIndicator()),
                 );
+              } else {
+                return LoginScreen();
               }
-              return LoginScreen();
             },
           ),
         ),

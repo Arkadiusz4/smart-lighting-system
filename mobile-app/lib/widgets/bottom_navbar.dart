@@ -9,31 +9,31 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('BottomNavBar: Building');
     return BlocBuilder<NavigationBloc, NavigationState>(
       builder: (context, state) {
         return BottomNavigationBar(
           currentIndex: state.selectedIndex,
           onTap: (index) {
-            print('BottomNavBar: tapped index $index');
             context.read<NavigationBloc>().add(PageTapped(index));
           },
+          selectedIconTheme: const IconThemeData(size: 30),
+          unselectedIconTheme: const IconThemeData(size: 22),
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
-              label: 'Główny',
+              label: '',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.devices),
-              label: 'Urządzenia',
+              label: '',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.list),
-              label: 'Logi',
+              label: '',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.account_circle),
-              label: 'Konto',
+              label: '',
             ),
           ],
         );

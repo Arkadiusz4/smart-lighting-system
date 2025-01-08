@@ -38,6 +38,21 @@ class AuthRepository {
     }
   }
 
+  Future<void> deleteAccount() async {
+    try {
+      User? user = _firebaseAuth.currentUser;
+      if (user != null) {
+        await user.delete();
+        print('AuthRepository: Account deleted');
+      } else {
+        throw Exception('No user logged in');
+      }
+    } catch (e) {
+      print('AuthRepository deleteAccount Error: $e');
+      throw Exception(e.toString());
+    }
+  }
+
   Stream<User?> get user => _firebaseAuth.authStateChanges();
 
   User? get currentUser => _firebaseAuth.currentUser;

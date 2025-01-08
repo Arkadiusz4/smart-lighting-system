@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_app/styles/color.dart';
 import 'blocs/auth/auth_bloc.dart';
 import 'blocs/auth/auth_event.dart';
 import 'blocs/auth/auth_state.dart';
@@ -30,7 +31,29 @@ class MyApp extends StatelessWidget {
         child: MaterialApp(
           title: 'Smart Lighting',
           theme: ThemeData(
-            primarySwatch: Colors.blue,
+            primaryColor: primaryColor,
+            scaffoldBackgroundColor: darkBackground,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: darkBackground,
+              foregroundColor: textColor,
+              elevation: 0,
+            ),
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                foregroundColor: darkBackground,
+                backgroundColor: primaryColor,
+                textStyle: const TextStyle(fontSize: 16),
+              ),
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: darkBackground,
+              selectedItemColor: primaryColor,
+              unselectedItemColor: Colors.grey,
+            ),
+            textTheme: const TextTheme(
+              bodyLarge: TextStyle(color: textColor),
+              bodyMedium: TextStyle(color: textColor),
+            ),
           ),
           routes: {
             '/login': (context) => LoginScreen(),

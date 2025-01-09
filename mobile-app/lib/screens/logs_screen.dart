@@ -1,8 +1,10 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/logs/logs_bloc.dart';
 import 'package:mobile_app/blocs/logs/logs_event.dart';
 import 'package:mobile_app/blocs/logs/logs_state.dart';
+import 'package:mobile_app/helpers/log_icon_helper.dart';
 import 'package:mobile_app/models/log_entry.dart';
 import 'package:mobile_app/repositories/logs_repository.dart';
 import 'package:mobile_app/styles/color.dart';
@@ -14,8 +16,13 @@ class LogsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
     return BlocProvider(
-      create: (context) => LogsBloc(logsRepository: LogsRepository())..add(const LoadLogs()),
+      create: (context) => LogsBloc(
+        logsRepository: LogsRepository(),
+        userId: userId,
+      )..add(const LoadLogs()),
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Logi'),
@@ -32,7 +39,9 @@ class LogsScreen extends StatelessWidget {
               Expanded(
                 child: BlocBuilder<LogsBloc, LogsState>(
                   builder: (context, state) {
-                    if (state is LogsLoaded) {
+                    if (state is LogsLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    } else if (state is LogsLoaded) {
                       if (state.logs.isEmpty) {
                         return const Center(
                           child: Text('Brak logów do wyświetlenia', style: TextStyle(color: textColor)),
@@ -41,9 +50,8 @@ class LogsScreen extends StatelessWidget {
 
                       final Map<String, Map<String, List<LogEntry>>> groupedLogs = {};
                       for (var log in state.logs) {
-                        final monthKey = DateFormat('LLLL yyyy', 'pl_PL').format(log.timestamp); // np. "styczeń 2025"
-                        final dayKey =
-                            DateFormat('d MMMM yyyy', 'pl_PL').format(log.timestamp); // np. "8 stycznia 2025"
+                        final monthKey = DateFormat('LLLL yyyy', 'pl_PL').format(log.timestamp);
+                        final dayKey = DateFormat('d MMMM yyyy', 'pl_PL').format(log.timestamp);
 
                         groupedLogs.putIfAbsent(monthKey, () => {});
                         groupedLogs[monthKey]!.putIfAbsent(dayKey, () => []);
@@ -106,16 +114,17 @@ class LogsScreen extends StatelessWidget {
                                     ),
                                     ...logsInDay.map((log) {
                                       final time = DateFormat('HH:mm').format(log.timestamp);
+
+                                      final iconData = LogIconHelper.getIcon(log);
+                                      final iconColor = LogIconHelper.getIconColor(log);
+
                                       return Padding(
                                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                                         child: Card(
                                           color: Colors.white.withOpacity(0.1),
                                           margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                                           child: ListTile(
-                                            leading: Icon(
-                                              log.device == 'LED' ? Icons.lightbulb : Icons.sensors,
-                                              color: primaryColor,
-                                            ),
+                                            leading: Icon(iconData, color: iconColor),
                                             title: Text(
                                               log.message,
                                               style: const TextStyle(
@@ -128,16 +137,20 @@ class LogsScreen extends StatelessWidget {
                                           ),
                                         ),
                                       );
-                                    }),
+                                    }).toList(),
                                   ],
                                 );
-                              }),
+                              }).toList(),
                             ],
                           );
                         },
                       );
+                    } else if (state is LogsError) {
+                      return Center(
+                        child: Text('Błąd: ${state.message}', style: const TextStyle(color: textColor)),
+                      );
                     }
-                    return const SizedBox();
+                    return const Center(child: CircularProgressIndicator());
                   },
                 ),
               ),

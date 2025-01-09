@@ -1,19 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_app/blocs/auth/auth_bloc.dart';
+import 'package:mobile_app/blocs/auth/auth_event.dart';
+import 'package:mobile_app/blocs/auth/auth_state.dart';
+import 'package:mobile_app/blocs/boards/board_event.dart';
+import 'package:mobile_app/blocs/navigation/navigation_bloc.dart';
+import 'package:mobile_app/blocs/boards/board_bloc.dart';
+import 'package:mobile_app/repositories/auth_repository.dart';
+import 'package:mobile_app/repositories/boards_repository.dart';
+import 'package:mobile_app/screens/login_screen.dart';
+import 'package:mobile_app/screens/register_screen.dart';
+import 'package:mobile_app/screens/main_navigation_screen.dart';
 import 'package:mobile_app/styles/color.dart';
-import 'blocs/auth/auth_bloc.dart';
-import 'blocs/auth/auth_event.dart';
-import 'blocs/auth/auth_state.dart';
-import 'blocs/navigation/navigation_bloc.dart';
-import 'repositories/auth_repository.dart';
-import 'screens/login_screen.dart';
-import 'screens/register_screen.dart';
-import 'screens/main_navigation_screen.dart';
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
 
   final AuthRepository _authRepository = AuthRepository();
+  final BoardsRepository _boardsRepository = BoardsRepository();
 
   @override
   Widget build(BuildContext context) {
@@ -63,8 +67,14 @@ class MyApp extends StatelessWidget {
             builder: (context, state) {
               print('app.dart: Current AuthState: $state');
               if (state is AuthAuthenticated) {
-                print('app.dart: Navigating to MainNavigationScreen for user: ${state.user.email}');
-                return const MainNavigationScreen();
+                print('app.dart: User is authenticated: ${state.user.email}');
+                return BlocProvider(
+                  create: (context) => BoardsBloc(
+                    boardsRepository: _boardsRepository,
+                    userId: state.user.uid,
+                  )..add(LoadBoards()),
+                  child: const MainNavigationScreen(),
+                );
               } else if (state is AuthLoading) {
                 return const Scaffold(
                   body: Center(child: CircularProgressIndicator()),

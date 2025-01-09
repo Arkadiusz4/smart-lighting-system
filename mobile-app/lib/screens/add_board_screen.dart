@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
+import 'package:mobile_app/screens/qr_code_scanner_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class AddBoardScreen extends StatefulWidget {
@@ -22,7 +23,7 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   void initState() {
     super.initState();
     _selectedRoom = _rooms.first;
-    _scannedBoardId = ''; // inicjalne puste
+    _scannedBoardId = '';
   }
 
   @override
@@ -32,10 +33,16 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   }
 
   Future<void> _scanQRCode() async {
-    // Symulacja skanowania QR – tutaj dodaj rzeczywistą implementację lub pakiet do skanowania QR.
-    setState(() {
-      _scannedBoardId = 'dummyBoardId123';
-    });
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const QRCodeScannerScreen()),
+    );
+
+    if (result != null) {
+      setState(() {
+        _scannedBoardId = result as String;
+      });
+    }
   }
 
   @override

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app/repositories/auth_repository.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
@@ -58,6 +59,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
       if (user != null) {
         print('AuthRegistered: User registered and authenticated');
+        await createUserDocument(user.uid);
         emit(AuthAuthenticated(user: user));
       } else {
         print('AuthRegistered: User is unauthenticated');
@@ -80,5 +82,20 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       print('AuthLoggedOut Error: $e');
       emit(AuthError(message: e.toString()));
     }
+  }
+
+  Future<void> createUserDocument(String userId, {Map<String, dynamic>? additionalData}) async {
+    final userDocRef = FirebaseFirestore.instance.collection('users').doc(userId);
+    await userDocRef.set({
+      ...?additionalData,
+      'createdAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  Future<void> createEmptyBoard(String userId) async {
+    final boardsCollection = FirebaseFirestore.instance.collection('users').doc(userId).collection('boards');
+    await boardsCollection.doc('placeholder').set({
+      'createdAt': FieldValue.serverTimestamp(),
+    });
   }
 }

@@ -17,10 +17,7 @@ class LogsBloc extends Bloc<LogsEvent, LogsState> {
   Future<void> _onLoadLogs(LoadLogs event, Emitter<LogsState> emit) async {
     emit(LogsLoading());
     try {
-      final logs = await logsRepository.fetchLogs(
-        since: event.since,
-        userId: userId,
-      );
+      final logs = await logsRepository.fetchLogsFromAllBoards(userId);
       emit(LogsLoaded(logs));
     } catch (e) {
       emit(LogsError(e.toString()));

@@ -44,4 +44,17 @@ class BoardsRepository {
       throw Exception('Error removing board: $e');
     }
   }
+
+  Future<void> addBoard(String userId, String boardId, String name, String room) async {
+    try {
+      final boardDoc = FirebaseFirestore.instance.collection('users').doc(userId).collection('boards').doc(boardId);
+      await boardDoc.set({
+        'name': name,
+        'room': room,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      throw Exception('Error adding board: $e');
+    }
+  }
 }

@@ -14,6 +14,7 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
     on<LoadBoards>(_onLoadBoards);
     on<EditBoard>(_onEditBoard);
     on<RemoveBoard>(_onRemoveBoard);
+    on<AddBoard>(_onAddBoard);
   }
 
   Future<void> _onLoadBoards(LoadBoards event, Emitter<BoardsState> emit) async {
@@ -39,6 +40,16 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
   Future<void> _onRemoveBoard(RemoveBoard event, Emitter<BoardsState> emit) async {
     try {
       await boardsRepository.removeBoard(userId, event.boardId);
+      final boards = await boardsRepository.fetchBoards(userId);
+      emit(BoardsLoaded(boards));
+    } catch (e) {
+      emit(BoardsError(e.toString()));
+    }
+  }
+
+  Future<void> _onAddBoard(AddBoard event, Emitter<BoardsState> emit) async {
+    try {
+      await boardsRepository.addBoard(userId, event.boardId, event.name, event.room);
       final boards = await boardsRepository.fetchBoards(userId);
       emit(BoardsLoaded(boards));
     } catch (e) {

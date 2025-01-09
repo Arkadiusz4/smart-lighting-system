@@ -32,3 +32,18 @@ class RemoveBoard extends BoardsEvent {
   @override
   List<Object?> get props => [boardId];
 }
+
+class AddBoard extends BoardsEvent {
+  final String boardId;
+  final String name;
+  final String room;
+
+  const AddBoard({
+    required this.boardId,
+    required this.name,
+    required this.room,
+  });
+
+  @override
+  List<Object?> get props => [boardId, name, room];
+}

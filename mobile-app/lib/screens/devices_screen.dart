@@ -5,6 +5,7 @@ import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
 import 'package:mobile_app/blocs/boards/board_state.dart';
 import 'package:mobile_app/repositories/boards_repository.dart';
+import 'package:mobile_app/screens/add_board_screen.dart';
 import 'package:mobile_app/screens/edit_device_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
@@ -96,7 +97,10 @@ class DevicesScreen extends StatelessWidget {
         floatingActionButton: FloatingActionButton(
           backgroundColor: primaryColor,
           onPressed: () {
-            // Navigator.push(context, MaterialPageRoute(builder: (_) => AddBoardScreen()));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const AddBoardScreen()),
+            );
           },
           child: const Icon(Icons.add),
         ),

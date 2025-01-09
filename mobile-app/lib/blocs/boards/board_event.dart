@@ -8,3 +8,27 @@ abstract class BoardsEvent extends Equatable {
 }
 
 class LoadBoards extends BoardsEvent {}
+
+class EditBoard extends BoardsEvent {
+  final String boardId;
+  final String newName;
+  final String newRoom;
+
+  const EditBoard({
+    required this.boardId,
+    required this.newName,
+    required this.newRoom,
+  });
+
+  @override
+  List<Object?> get props => [boardId, newName, newRoom];
+}
+
+class RemoveBoard extends BoardsEvent {
+  final String boardId;
+
+  const RemoveBoard(this.boardId);
+
+  @override
+  List<Object?> get props => [boardId];
+}

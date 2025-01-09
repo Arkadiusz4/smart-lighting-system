@@ -18,4 +18,30 @@ class BoardsRepository {
       throw Exception('Błąd pobierania boardów: $e');
     }
   }
+
+  Future<void> updateBoard(String userId, String boardId, String newName, String newRoom) async {
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(userId).collection('boards').doc(boardId).update({
+        'name': newName,
+        'room': newRoom,
+      });
+    } catch (e) {
+      throw Exception('Error updating board: $e');
+    }
+  }
+
+  Future<void> removeBoard(String userId, String boardId) async {
+    try {
+      final boardDoc = FirebaseFirestore.instance.collection('users').doc(userId).collection('boards').doc(boardId);
+
+      final logsSnapshot = await boardDoc.collection('logs').get();
+      for (var doc in logsSnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      await boardDoc.delete();
+    } catch (e) {
+      throw Exception('Error removing board: $e');
+    }
+  }
 }

@@ -5,6 +5,7 @@ import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
 import 'package:mobile_app/blocs/boards/board_state.dart';
 import 'package:mobile_app/repositories/boards_repository.dart';
+import 'package:mobile_app/screens/edit_device_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class DevicesScreen extends StatelessWidget {
@@ -51,9 +52,31 @@ class DevicesScreen extends StatelessWidget {
                       board.room.isNotEmpty ? board.room : 'Nieprzypisany pokój',
                       style: const TextStyle(color: textColor),
                     ),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.edit, color: primaryColor),
-                      onPressed: () {},
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: primaryColor),
+                          onPressed: () {
+                            final board = boards[index];
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (_) => BlocProvider.value(
+                                        value: BlocProvider.of<BoardsBloc>(context),
+                                        child: EditDeviceScreen(board: board),
+                                      )),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            final board = boards[index];
+                            context.read<BoardsBloc>().add(RemoveBoard(board.boardId));
+                          },
+                        ),
+                      ],
                     ),
                     onTap: () {},
                   );

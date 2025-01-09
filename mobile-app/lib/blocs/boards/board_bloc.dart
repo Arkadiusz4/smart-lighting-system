@@ -12,11 +12,33 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
     required this.userId,
   }) : super(BoardsInitial()) {
     on<LoadBoards>(_onLoadBoards);
+    on<EditBoard>(_onEditBoard);
+    on<RemoveBoard>(_onRemoveBoard);
   }
 
   Future<void> _onLoadBoards(LoadBoards event, Emitter<BoardsState> emit) async {
     emit(BoardsLoading());
     try {
+      final boards = await boardsRepository.fetchBoards(userId);
+      emit(BoardsLoaded(boards));
+    } catch (e) {
+      emit(BoardsError(e.toString()));
+    }
+  }
+
+  Future<void> _onEditBoard(EditBoard event, Emitter<BoardsState> emit) async {
+    try {
+      await boardsRepository.updateBoard(userId, event.boardId, event.newName, event.newRoom);
+      final boards = await boardsRepository.fetchBoards(userId);
+      emit(BoardsLoaded(boards));
+    } catch (e) {
+      emit(BoardsError(e.toString()));
+    }
+  }
+
+  Future<void> _onRemoveBoard(RemoveBoard event, Emitter<BoardsState> emit) async {
+    try {
+      await boardsRepository.removeBoard(userId, event.boardId);
       final boards = await boardsRepository.fetchBoards(userId);
       emit(BoardsLoaded(boards));
     } catch (e) {

@@ -1,9 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
 import 'package:mobile_app/blocs/boards/board_state.dart';
 import 'package:mobile_app/screens/add_board_screen.dart';
+import 'package:mobile_app/screens/devices_list_screen.dart';
 import 'package:mobile_app/screens/edit_device_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
@@ -12,6 +14,8 @@ class DevicesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Zarządzanie Urządzeniami'),
@@ -53,7 +57,10 @@ class DevicesScreen extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => EditDeviceScreen(board: board),
+                              builder: (_) => BlocProvider.value(
+                                value: BlocProvider.of<BoardsBloc>(context),
+                                child: EditDeviceScreen(board: board),
+                              ),
                             ),
                           );
                         },
@@ -66,7 +73,14 @@ class DevicesScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  onTap: () {},
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => DevicesListScreen(userId: userId, boardId: board.boardId),
+                      ),
+                    );
+                  },
                 );
               },
             );
@@ -85,7 +99,6 @@ class DevicesScreen extends StatelessWidget {
         backgroundColor: primaryColor,
         onPressed: () {
           final boardsBloc = context.read<BoardsBloc>();
-
           Navigator.push(
             context,
             MaterialPageRoute(

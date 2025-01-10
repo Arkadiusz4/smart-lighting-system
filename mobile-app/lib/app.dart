@@ -12,6 +12,7 @@ import 'package:mobile_app/screens/login_screen.dart';
 import 'package:mobile_app/screens/register_screen.dart';
 import 'package:mobile_app/screens/main_navigation_screen.dart';
 import 'package:mobile_app/styles/color.dart';
+import 'repositories/logs_repository.dart';
 
 class MyApp extends StatelessWidget {
   MyApp({super.key});
@@ -71,6 +72,7 @@ class MyApp extends StatelessWidget {
                 return BlocProvider(
                   create: (context) => BoardsBloc(
                     boardsRepository: _boardsRepository,
+                    logsRepository: LogsRepository(),
                     userId: state.user.uid,
                   )..add(LoadBoards()),
                   child: const MainNavigationScreen(),

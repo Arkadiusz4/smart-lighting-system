@@ -34,11 +34,6 @@ class BoardsRepository {
     try {
       final boardDoc = FirebaseFirestore.instance.collection('users').doc(userId).collection('boards').doc(boardId);
 
-      final logsSnapshot = await boardDoc.collection('logs').get();
-      for (var doc in logsSnapshot.docs) {
-        await doc.reference.delete();
-      }
-
       await boardDoc.delete();
     } catch (e) {
       throw Exception('Error removing board: $e');

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_app/styles/color.dart';
 import 'package:mobile_app/models/log_entry.dart';
+import 'package:mobile_app/styles/color.dart';
 
 class LogIconHelper {
   static IconData getIcon(LogEntry log) {
@@ -11,6 +11,20 @@ class LogIconHelper {
         return Icons.warning;
     }
 
+    if (log.eventType == 'add_board') {
+      return Icons.add;
+    } else if (log.eventType == 'edit_board') {
+      return Icons.edit;
+    } else if (log.eventType == 'remove_board') {
+      return Icons.delete;
+    } else if (log.eventType == 'add_device') {
+      return Icons.add_box;
+    } else if (log.eventType == 'edit_device') {
+      return Icons.edit;
+    } else if (log.eventType == 'remove_device') {
+      return Icons.delete_forever;
+    }
+
     if (log.device == 'Network') {
       if (log.wifiStatus == 'no_wifi') {
         return Icons.signal_wifi_off;
@@ -18,7 +32,6 @@ class LogIconHelper {
         return Icons.wifi;
       }
     }
-
     if (log.device == 'LED') {
       if (log.status == 'on') {
         return Icons.lightbulb;
@@ -26,12 +39,10 @@ class LogIconHelper {
         return Icons.lightbulb_outline;
       }
     }
-
     if (log.device == 'Motion Sensor') {
       return Icons.directions_run;
     }
-
-    return log.device == 'LED' ? Icons.lightbulb : Icons.sensors;
+    return Icons.device_unknown;
   }
 
   static Color getIconColor(LogEntry log) {
@@ -40,8 +51,14 @@ class LogIconHelper {
         return Colors.red;
       case 'warning':
         return Colors.orange;
-      default:
-        break;
+    }
+
+    if (log.eventType == 'add_board' || log.eventType == 'add_device') {
+      return Colors.green;
+    } else if (log.eventType == 'edit_board' || log.eventType == 'edit_device') {
+      return Colors.blue;
+    } else if (log.eventType == 'remove_board' || log.eventType == 'remove_device') {
+      return Colors.red;
     }
 
     if (log.device == 'Network') {
@@ -51,7 +68,6 @@ class LogIconHelper {
         return Colors.green;
       }
     }
-
     if (log.device == 'LED') {
       if (log.status == 'on') {
         return Colors.yellow;
@@ -59,11 +75,9 @@ class LogIconHelper {
         return primaryColor;
       }
     }
-
     if (log.device == 'Motion Sensor') {
       return Colors.yellow;
     }
-
     return primaryColor;
   }
 }

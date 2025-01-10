@@ -7,6 +7,7 @@ class LogEntry {
   final String severity;
   final String? status;
   final String? wifiStatus;
+  final String? eventType;
 
   LogEntry({
     required this.timestamp,
@@ -14,8 +15,9 @@ class LogEntry {
     required this.device,
     required this.boardId,
     required this.userId,
-    this.severity = 'info',
+    required this.severity,
     this.status,
     this.wifiStatus,
+    this.eventType,
   });
 }

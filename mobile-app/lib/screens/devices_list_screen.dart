@@ -4,6 +4,7 @@ import 'package:mobile_app/blocs/devices/devices_bloc.dart';
 import 'package:mobile_app/blocs/devices/devices_event.dart';
 import 'package:mobile_app/blocs/devices/devices_state.dart';
 import 'package:mobile_app/repositories/devices_repository.dart';
+import 'package:mobile_app/repositories/logs_repository.dart';
 import 'package:mobile_app/screens/add_device_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
@@ -18,6 +19,9 @@ class DevicesListScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) => DevicesBloc(
         devicesRepository: DevicesRepository(userId: userId, boardId: boardId),
+        logsRepository: LogsRepository(),
+        userId: userId,
+        boardId: boardId,
       )..add(LoadDevices()),
       child: Scaffold(
         appBar: AppBar(

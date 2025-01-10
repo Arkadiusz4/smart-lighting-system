@@ -34,16 +34,19 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
   Future<void> _onEditBoard(EditBoard event, Emitter<BoardsState> emit) async {
     try {
       await boardsRepository.updateBoard(userId, event.boardId, event.newName, event.newRoom);
+
       await logsRepository.addLogEntry(LogEntry(
         timestamp: DateTime.now(),
-        message: 'Zedytowano board: ${event.boardId}',
+        message: 'Zedytowano board: ${event.newName}',
         device: 'Board',
         boardId: event.boardId,
         userId: userId,
         severity: 'info',
         status: null,
         wifiStatus: null,
+        eventType: 'edit_board',
       ));
+
       final boards = await boardsRepository.fetchBoards(userId);
       emit(BoardsLoaded(boards));
     } catch (e) {
@@ -55,7 +58,6 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
     try {
       await boardsRepository.removeBoard(userId, event.boardId);
 
-      // Dodaj log do osobnej kolekcji
       await logsRepository.addLogEntry(LogEntry(
         timestamp: DateTime.now(),
         message: 'Usunięto board: ${event.boardId}',

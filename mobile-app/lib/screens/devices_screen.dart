@@ -6,7 +6,7 @@ import 'package:mobile_app/blocs/boards/board_event.dart';
 import 'package:mobile_app/blocs/boards/board_state.dart';
 import 'package:mobile_app/screens/add_board_screen.dart';
 import 'package:mobile_app/screens/devices_list_screen.dart';
-import 'package:mobile_app/screens/edit_device_screen.dart';
+import 'package:mobile_app/screens/edit_board_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class DevicesScreen extends StatelessWidget {
@@ -59,7 +59,7 @@ class DevicesScreen extends StatelessWidget {
                             MaterialPageRoute(
                               builder: (_) => BlocProvider.value(
                                 value: BlocProvider.of<BoardsBloc>(context),
-                                child: EditDeviceScreen(board: board),
+                                child: EditBoardScreen(board: board),
                               ),
                             ),
                           );

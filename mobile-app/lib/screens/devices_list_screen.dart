@@ -6,6 +6,7 @@ import 'package:mobile_app/blocs/devices/devices_state.dart';
 import 'package:mobile_app/repositories/devices_repository.dart';
 import 'package:mobile_app/repositories/logs_repository.dart';
 import 'package:mobile_app/screens/add_device_screen.dart';
+import 'package:mobile_app/screens/edit_device_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class DevicesListScreen extends StatelessWidget {
@@ -47,13 +48,31 @@ class DevicesListScreen extends StatelessWidget {
                     title: Text(device.name, style: const TextStyle(color: textColor)),
                     subtitle:
                         Text('Typ: ${device.type}, Port: ${device.port}', style: const TextStyle(color: textColor)),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () {
-                        context.read<DevicesBloc>().add(RemoveDevice(device.deviceId));
-                      },
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.edit, color: primaryColor),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => BlocProvider.value(
+                                  value: context.read<DevicesBloc>(),
+                                  child: EditDeviceScreen(device: device),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () {
+                            context.read<DevicesBloc>().add(RemoveDevice(device.deviceId));
+                          },
+                        ),
+                      ],
                     ),
-                    onTap: () {},
                   );
                 },
               );

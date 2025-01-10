@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
-import 'package:mobile_app/screens/qr_code_scanner_screen.dart';
+import 'package:mobile_app/screens/device_screens/others/qr_code_scanner_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class AddBoardScreen extends StatefulWidget {

@@ -5,8 +5,8 @@ import 'package:mobile_app/blocs/devices/devices_event.dart';
 import 'package:mobile_app/blocs/devices/devices_state.dart';
 import 'package:mobile_app/repositories/devices_repository.dart';
 import 'package:mobile_app/repositories/logs_repository.dart';
-import 'package:mobile_app/screens/add_device_screen.dart';
-import 'package:mobile_app/screens/edit_device_screen.dart';
+import 'package:mobile_app/screens/device_screens/devices/add_device_screen.dart';
+import 'package:mobile_app/screens/device_screens/devices/edit_device_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class DevicesListScreen extends StatelessWidget {

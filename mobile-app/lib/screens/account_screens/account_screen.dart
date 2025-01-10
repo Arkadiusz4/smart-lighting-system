@@ -6,6 +6,8 @@ import 'package:mobile_app/blocs/account/account_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile_app/blocs/auth/auth_bloc.dart';
 import 'package:mobile_app/blocs/auth/auth_event.dart';
+import 'package:mobile_app/models/log_entry.dart';
+import 'package:mobile_app/repositories/logs_repository.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class AccountScreen extends StatelessWidget {
@@ -66,6 +68,26 @@ class AccountScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 30.0),
                     child: Column(
                       children: [
+                        // ElevatedButton(
+                        //   onPressed: () async {
+                        //     final user = FirebaseAuth.instance.currentUser;
+                        //     if (user != null) {
+                        //       final logEntry = LogEntry(
+                        //         timestamp: DateTime.now(),
+                        //         message: 'Testowy log',
+                        //         device: 'LED',
+                        //         boardId: 'ESP32_1',
+                        //         userId: user.uid,
+                        //         severity: 'info',
+                        //         status: 'on',
+                        //         wifiStatus: 'connected',
+                        //       );
+                        //       await LogsRepository().addLogEntry(logEntry);
+                        //       print('Log entry added.');
+                        //     }
+                        //   },
+                        //   child: Text('Dodaj testowy log'),
+                        // ),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(

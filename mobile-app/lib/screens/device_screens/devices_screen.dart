@@ -4,9 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
 import 'package:mobile_app/blocs/boards/board_state.dart';
-import 'package:mobile_app/screens/add_board_screen.dart';
-import 'package:mobile_app/screens/devices_list_screen.dart';
-import 'package:mobile_app/screens/edit_board_screen.dart';
+import 'package:mobile_app/screens/device_screens/boards/add_board_screen.dart';
+import 'package:mobile_app/screens/device_screens/devices/devices_list_screen.dart';
+import 'package:mobile_app/screens/device_screens/boards/edit_board_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class DevicesScreen extends StatelessWidget {

@@ -5,10 +5,10 @@ import 'package:mobile_app/blocs/navigation/navigation_bloc.dart';
 import 'package:mobile_app/blocs/navigation/navigation_state.dart';
 import 'package:mobile_app/repositories/auth_repository.dart';
 import 'package:mobile_app/widgets/bottom_navbar.dart';
-import 'home_screen.dart';
-import 'devices_screen.dart';
-import 'logs_screen.dart';
-import 'account_screen.dart';
+import 'home_screen/home_screen.dart';
+import 'device_screens/devices_screen.dart';
+import 'logs_screens/logs_screen.dart';
+import 'account_screens/account_screen.dart';
 
 class MainNavigationScreen extends StatelessWidget {
   const MainNavigationScreen({super.key});

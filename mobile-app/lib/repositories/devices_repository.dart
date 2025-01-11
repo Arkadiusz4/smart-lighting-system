@@ -5,7 +5,10 @@ class DevicesRepository {
   final String userId;
   final String boardId;
 
-  DevicesRepository({required this.userId, required this.boardId});
+  DevicesRepository({
+    required this.userId,
+    required this.boardId,
+  });
 
   CollectionReference get _devicesCollection => FirebaseFirestore.instance
       .collection('users')
@@ -23,6 +26,8 @@ class DevicesRepository {
         name: data['name'] ?? '',
         type: data['type'] ?? '',
         port: data['port'] ?? '',
+        boardId: data['boardId'] ?? boardId,
+        status: data['status'],
       );
     }).toList();
   }
@@ -32,6 +37,8 @@ class DevicesRepository {
       'name': device.name,
       'type': device.type,
       'port': device.port,
+      'boardId': device.boardId,
+      'status': device.status ?? 'off',
     });
   }
 
@@ -45,5 +52,11 @@ class DevicesRepository {
 
   Future<void> removeDevice(String deviceId) async {
     await _devicesCollection.doc(deviceId).delete();
+  }
+
+  Future<void> toggleLed(String deviceId, bool status) async {
+    await _devicesCollection.doc(deviceId).update({
+      'status': status ? 'on' : 'off',
+    });
   }
 }

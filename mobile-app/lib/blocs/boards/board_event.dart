@@ -47,3 +47,12 @@ class AddBoard extends BoardsEvent {
   @override
   List<Object?> get props => [boardId, name, room];
 }
+
+class SelectBoard extends BoardsEvent {
+  final String boardId;
+
+  const SelectBoard(this.boardId);
+
+  @override
+  List<Object?> get props => [boardId];
+}

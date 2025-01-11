@@ -21,6 +21,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     on<AddDevice>(_onAddDevice);
     on<UpdateDevice>(_onUpdateDevice);
     on<RemoveDevice>(_onRemoveDevice);
+    on<ToggleLed>(_onToggleLed);
   }
 
   Future<void> _onLoadDevices(LoadDevices event, Emitter<DevicesState> emit) async {
@@ -38,7 +39,6 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
       try {
         await devicesRepository.addDevice(event.device);
 
-        // Dodaj log dla dodania urządzenia
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
           message: 'Dodano urządzenie: ${event.device.name}',
@@ -46,8 +46,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
           boardId: boardId,
           userId: userId,
           severity: 'info',
-          status: null,
-          wifiStatus: null,
+          status: event.device.status ?? 'off',
           eventType: 'add_device',
         ));
 
@@ -64,7 +63,6 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
       try {
         await devicesRepository.updateDevice(event.deviceId, event.newName, event.newType, event.newPort);
 
-        // Dodaj log dla edycji urządzenia
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
           message: 'Zedytowano urządzenie: ${event.deviceId}',
@@ -73,7 +71,6 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
           userId: userId,
           severity: 'info',
           status: null,
-          wifiStatus: null,
           eventType: 'edit_device',
         ));
 
@@ -90,7 +87,6 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
       try {
         await devicesRepository.removeDevice(event.deviceId);
 
-        // Dodaj log dla usunięcia urządzenia
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
           message: 'Usunięto urządzenie: ${event.deviceId}',
@@ -99,8 +95,31 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
           userId: userId,
           severity: 'info',
           status: null,
-          wifiStatus: null,
           eventType: 'remove_device',
+        ));
+
+        final devices = await devicesRepository.fetchDevices();
+        emit(DevicesLoaded(devices));
+      } catch (e) {
+        emit(DevicesError(e.toString()));
+      }
+    }
+  }
+
+  Future<void> _onToggleLed(ToggleLed event, Emitter<DevicesState> emit) async {
+    if (state is DevicesLoaded) {
+      try {
+        await devicesRepository.toggleLed(event.deviceId, event.newStatus);
+
+        await logsRepository.addLogEntry(LogEntry(
+          timestamp: DateTime.now(),
+          message: event.newStatus ? 'Włączono LED: ${event.deviceId}' : 'Wyłączono LED: ${event.deviceId}',
+          device: 'Device',
+          boardId: boardId,
+          userId: userId,
+          severity: 'info',
+          status: event.newStatus ? 'on' : 'off',
+          eventType: event.newStatus ? 'led_on' : 'led_off',
         ));
 
         final devices = await devicesRepository.fetchDevices();

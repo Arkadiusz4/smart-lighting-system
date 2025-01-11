@@ -6,7 +6,9 @@ import 'package:mobile_app/models/device.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class AddDeviceScreen extends StatefulWidget {
-  const AddDeviceScreen({super.key});
+  final String boardId;
+
+  const AddDeviceScreen({super.key, required this.boardId});
 
   @override
   _AddDeviceScreenState createState() => _AddDeviceScreenState();
@@ -14,15 +16,15 @@ class AddDeviceScreen extends StatefulWidget {
 
 class _AddDeviceScreenState extends State<AddDeviceScreen> {
   final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _typeController = TextEditingController();
   String? _selectedPort;
+  String? _selectedDevice;
 
+  final List<String> _devices = ['LED', 'Sensor ruchu', 'Czujnik dymu', 'Czujnik gazu'];
   final List<String> _ports = ['GPIO1', 'GPIO2', 'GPIO3', 'UART0'];
 
   @override
   void dispose() {
     _nameController.dispose();
-    _typeController.dispose();
     super.dispose();
   }
 
@@ -41,9 +43,21 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Nazwa urządzenia'),
             ),
-            TextField(
-              controller: _typeController,
+            const SizedBox(height: 16),
+            DropdownButtonFormField<String>(
               decoration: const InputDecoration(labelText: 'Typ urządzenia'),
+              value: _devices.first,
+              items: _devices.map((device) {
+                return DropdownMenuItem(
+                  value: device,
+                  child: Text(device),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  _selectedDevice = value;
+                });
+              },
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
@@ -65,7 +79,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
             ElevatedButton(
               onPressed: () {
                 final name = _nameController.text;
-                final type = _typeController.text;
+                final type = _selectedDevice ?? _devices.first;
                 final port = _selectedPort ?? _ports.first;
 
                 final devicesBloc = context.read<DevicesBloc>();
@@ -76,6 +90,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                   name: name,
                   type: type,
                   port: port,
+                  boardId: widget.boardId,
                 );
                 devicesBloc.add(AddDevice(device));
                 Navigator.of(context).pop();

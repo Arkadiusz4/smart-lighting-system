@@ -25,9 +25,25 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
     emit(BoardsLoading());
     try {
       final boards = await boardsRepository.fetchBoards(userId);
-      emit(BoardsLoaded(boards));
+
+      final defaultBoardId = boards.isNotEmpty ? boards.first.boardId : null;
+
+      emit(BoardsLoaded(
+        boards: boards,
+        currentBoardId: defaultBoardId,
+      ));
     } catch (e) {
       emit(BoardsError(e.toString()));
+    }
+  }
+
+  void _onSelectBoard(SelectBoard event, Emitter<BoardsState> emit) {
+    final currentState = state;
+    if (currentState is BoardsLoaded) {
+      emit(BoardsLoaded(
+        boards: currentState.boards,
+        currentBoardId: event.boardId,
+      ));
     }
   }
 
@@ -48,7 +64,12 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
       ));
 
       final boards = await boardsRepository.fetchBoards(userId);
-      emit(BoardsLoaded(boards));
+      final defaultBoardId = boards.isNotEmpty ? boards.first.boardId : null;
+
+      emit(BoardsLoaded(
+        boards: boards,
+        currentBoardId: defaultBoardId,
+      ));
     } catch (e) {
       emit(BoardsError(e.toString()));
     }
@@ -71,7 +92,12 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
       ));
 
       final boards = await boardsRepository.fetchBoards(userId);
-      emit(BoardsLoaded(boards));
+      final defaultBoardId = boards.isNotEmpty ? boards.first.boardId : null;
+
+      emit(BoardsLoaded(
+        boards: boards,
+        currentBoardId: defaultBoardId,
+      ));
     } catch (e) {
       emit(BoardsError(e.toString()));
     }
@@ -94,7 +120,12 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
       ));
 
       final boards = await boardsRepository.fetchBoards(userId);
-      emit(BoardsLoaded(boards));
+      final defaultBoardId = boards.isNotEmpty ? boards.first.boardId : null;
+
+      emit(BoardsLoaded(
+        boards: boards,
+        currentBoardId: defaultBoardId,
+      ));
     } catch (e) {
       emit(BoardsError(e.toString()));
     }

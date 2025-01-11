@@ -14,11 +14,15 @@ class BoardsLoading extends BoardsState {}
 
 class BoardsLoaded extends BoardsState {
   final List<Board> boards;
+  final String? currentBoardId;
 
-  const BoardsLoaded(this.boards);
+  const BoardsLoaded({
+    required this.boards,
+    this.currentBoardId,
+  });
 
   @override
-  List<Object?> get props => [boards];
+  List<Object?> get props => [boards, currentBoardId];
 }
 
 class BoardsError extends BoardsState {

@@ -95,7 +95,7 @@ class DevicesListScreen extends StatelessWidget {
                 MaterialPageRoute(
                   builder: (_) => BlocProvider.value(
                     value: devicesBloc,
-                    child: const AddDeviceScreen(),
+                    child: AddDeviceScreen(boardId: boardId),
                   ),
                 ),
               );

@@ -44,3 +44,13 @@ class RemoveDevice extends DevicesEvent {
   @override
   List<Object?> get props => [deviceId];
 }
+
+class ToggleLed extends DevicesEvent {
+  final String deviceId;
+  final bool newStatus;
+
+  const ToggleLed(this.deviceId, this.newStatus);
+
+  @override
+  List<Object?> get props => [deviceId, newStatus];
+}

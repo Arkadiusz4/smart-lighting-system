@@ -25,6 +25,16 @@ class _LedSwitchState extends State<LedSwitch> {
   }
 
   @override
+  void didUpdateWidget(covariant LedSwitch oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.device.status != widget.device.status) {
+      setState(() {
+        currentValue = widget.device.status == 'on';
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SwitchListTile(
       title: const Text('Włącz/wyłącz LED', style: TextStyle(color: textColor)),
@@ -34,7 +44,6 @@ class _LedSwitchState extends State<LedSwitch> {
           currentValue = value;
         });
         print("Toggle LED clicked, new value: $value");
-
         context.read<DevicesBloc>().add(
               ToggleLed(widget.device.deviceId, value),
             );

@@ -110,7 +110,6 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     if (state is DevicesLoaded) {
       try {
         await devicesRepository.toggleLed(event.deviceId, event.newStatus);
-
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
           message: event.newStatus ? 'Włączono LED: ${event.deviceId}' : 'Wyłączono LED: ${event.deviceId}',
@@ -121,10 +120,10 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
           status: event.newStatus ? 'on' : 'off',
           eventType: event.newStatus ? 'led_on' : 'led_off',
         ));
-
         final devices = await devicesRepository.fetchDevices();
         emit(DevicesLoaded(devices));
       } catch (e) {
+        print('Error in _onToggleLed: $e');
         emit(DevicesError(e.toString()));
       }
     }

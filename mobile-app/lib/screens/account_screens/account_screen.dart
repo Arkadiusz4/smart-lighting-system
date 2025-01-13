@@ -6,8 +6,6 @@ import 'package:mobile_app/blocs/account/account_state.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile_app/blocs/auth/auth_bloc.dart';
 import 'package:mobile_app/blocs/auth/auth_event.dart';
-import 'package:mobile_app/models/log_entry.dart';
-import 'package:mobile_app/repositories/logs_repository.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class AccountScreen extends StatelessWidget {

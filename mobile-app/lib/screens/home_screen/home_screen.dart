@@ -15,11 +15,11 @@ class HomeScreen extends StatelessWidget {
   final String room;
 
   const HomeScreen({
-    Key? key,
+    super.key,
     required this.userId,
     required this.boardId,
     required this.room,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

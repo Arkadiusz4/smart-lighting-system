@@ -13,7 +13,7 @@ class DevicesListScreen extends StatelessWidget {
   final String userId;
   final String boardId;
 
-  const DevicesListScreen({Key? key, required this.userId, required this.boardId}) : super(key: key);
+  const DevicesListScreen({super.key, required this.userId, required this.boardId});
 
   @override
   Widget build(BuildContext context) {

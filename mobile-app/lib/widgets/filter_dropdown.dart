@@ -5,6 +5,8 @@ import 'package:mobile_app/blocs/logs/logs_event.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class FilterDropdown extends StatefulWidget {
+  const FilterDropdown({super.key});
+
   @override
   _FilterDropdownState createState() => _FilterDropdownState();
 }
@@ -13,10 +15,10 @@ class _FilterDropdownState extends State<FilterDropdown> {
   String _selectedFilter = 'Ostatnia godzina';
 
   final Map<String, Duration> filterOptions = {
-    'Ostatnia godzina': Duration(hours: 1),
-    'Ostatni dzień': Duration(days: 1),
-    'Ostatni tydzień': Duration(days: 7),
-    'Ostatni miesiąc': Duration(days: 30),
+    'Ostatnia godzina': const Duration(hours: 1),
+    'Ostatni dzień': const Duration(days: 1),
+    'Ostatni tydzień': const Duration(days: 7),
+    'Ostatni miesiąc': const Duration(days: 30),
   };
 
   @override

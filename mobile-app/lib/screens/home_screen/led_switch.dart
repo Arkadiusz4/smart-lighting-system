@@ -9,7 +9,7 @@ class LedSwitch extends StatefulWidget {
   final Device device;
   final String userId;
 
-  const LedSwitch({Key? key, required this.device, required this.userId}) : super(key: key);
+  const LedSwitch({super.key, required this.device, required this.userId});
 
   @override
   _LedSwitchState createState() => _LedSwitchState();

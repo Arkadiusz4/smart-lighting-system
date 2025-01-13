@@ -8,7 +8,7 @@ import 'package:mobile_app/styles/color.dart';
 class EditDeviceScreen extends StatefulWidget {
   final Device device;
 
-  const EditDeviceScreen({Key? key, required this.device}) : super(key: key);
+  const EditDeviceScreen({super.key, required this.device});
 
   @override
   _EditDeviceScreenState createState() => _EditDeviceScreenState();

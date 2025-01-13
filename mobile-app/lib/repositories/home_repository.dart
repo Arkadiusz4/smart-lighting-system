@@ -1,4 +1,3 @@
-import 'package:mobile_app/models/board.dart';
 import 'package:mobile_app/models/device.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 

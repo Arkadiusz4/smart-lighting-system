@@ -32,8 +32,8 @@ class LogsScreen extends StatelessWidget {
           color: darkBackground,
           child: Column(
             children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
+              const Padding(
+                padding: EdgeInsets.all(8.0),
                 child: FilterDropdown(),
               ),
               Expanded(
@@ -137,10 +137,10 @@ class LogsScreen extends StatelessWidget {
                                           ),
                                         ),
                                       );
-                                    }).toList(),
+                                    }),
                                   ],
                                 );
-                              }).toList(),
+                              }),
                             ],
                           );
                         },

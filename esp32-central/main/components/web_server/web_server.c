@@ -1,4 +1,5 @@
 #include "web_server.h"
+#include "cJSON.h"
 #include "esp_http_server.h"
 #include "esp_log.h"
 #include "wifi_manager.h"
@@ -8,6 +9,8 @@
 
 static const char *TAG = "web_server";
 static httpd_handle_t server = NULL;
+
+static esp_err_t root_post_handler(httpd_req_t *req);
 
 static void url_decode(char *dst, const char *src) {
     char a, b;
@@ -150,13 +153,15 @@ void start_webserver(void) {
             .uri = "/",
             .method = HTTP_GET,
             .handler = get_handler,
-            .user_ctx = NULL};
+            .user_ctx = NULL
+    };
 
     httpd_uri_t uri_post = {
             .uri = "/",
             .method = HTTP_POST,
-            .handler = post_handler,
-            .user_ctx = NULL};
+            .handler = root_post_handler,
+            .user_ctx = NULL
+    };
 
     if (httpd_start(&server, &config) == ESP_OK) {
         httpd_register_uri_handler(server, &uri_get);
@@ -173,4 +178,40 @@ void start_webserver(void) {
         oled_draw_text(0, 8, "HTTP Server: Error!");
         oled_update_display();
     }
+}
+
+static esp_err_t root_post_handler(httpd_req_t *req) {
+    char content[128];
+    int received = httpd_req_recv(req, content, sizeof(content) - 1);
+    if (received <= 0) {
+        ESP_LOGE(TAG, "Błąd odbioru danych");
+        return ESP_FAIL;
+    }
+    content[received] = '\0'; // zakończ string
+    ESP_LOGI(TAG, "Odebrano dane: %s", content);
+
+    cJSON *json = cJSON_Parse(content);
+    if (json == NULL) {
+        ESP_LOGE(TAG, "Błąd parsowania JSON");
+        return ESP_FAIL;
+    }
+
+    const cJSON *ssid_json = cJSON_GetObjectItemCaseSensitive(json, "ssid");
+    const cJSON *password_json = cJSON_GetObjectItemCaseSensitive(json, "password");
+
+    const char *ssid = cJSON_IsString(ssid_json) ? ssid_json->valuestring : "";
+    const char *password = cJSON_IsString(password_json) ? password_json->valuestring : "";
+
+    ESP_LOGI(TAG, "Parsowane dane - SSID: %s, PASSWORD: %s", ssid, password);
+
+    save_wifi_credentials(ssid, password);
+
+    cJSON_Delete(json);
+
+    const char resp[] = "OK";
+    httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+
+    esp_restart();
+
+    return ESP_OK;
 }

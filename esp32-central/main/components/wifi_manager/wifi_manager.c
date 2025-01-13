@@ -1,4 +1,5 @@
 #include "wifi_manager.h"
+#include "esp_http_server.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
 #include "esp_log.h"
@@ -11,6 +12,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "oled_display.h"
+#include "cJSON.h"
 
 #define LED_GPIO_PIN GPIO_NUM_4
 
@@ -153,6 +155,7 @@ void wifi_manager_init(void) {
 }
 
 void save_wifi_credentials(const char *ssid, const char *password) {
+    ESP_LOGI(TAG, "Zapisywanie danych Wi-Fi: SSID=%s, PASSWORD=%s", ssid, password);
     nvs_handle_t nvs_handle;
     ESP_ERROR_CHECK(nvs_open("storage", NVS_READWRITE, &nvs_handle));
 
@@ -186,6 +189,7 @@ esp_err_t load_wifi_credentials(char *ssid, size_t ssid_size, char *password, si
     nvs_close(nvs_handle);
 
     if (err == ESP_OK) {
+        ESP_LOGI(TAG, "Wczytane dane Wi-Fi: SSID=%s, PASSWORD=%s", ssid, password);
         oled_clear_display();
         oled_draw_text(0, 0, "Wi-Fi Credentials:");
         oled_draw_text(0, 16, "Loaded!");

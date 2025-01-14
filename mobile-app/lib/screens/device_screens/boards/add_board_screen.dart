@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
 import 'package:mobile_app/screens/device_screens/others/qr_code_scanner_screen.dart';
+import 'package:mobile_app/screens/device_screens/others/scan_esp32_screen.dart';
 import 'package:mobile_app/styles/color.dart';
 
 class AddBoardScreen extends StatefulWidget {
@@ -90,26 +91,41 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
               style: const TextStyle(color: textColor),
             ),
             const Spacer(),
-            ElevatedButton(
-              onPressed: () {
-                if (_scannedBoardId == null || _scannedBoardId!.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Najpierw zeskanuj QR Code')),
-                  );
-                  return;
-                }
-                final newName = _nameController.text;
-                final newRoom = _selectedRoom ?? '';
-                context.read<BoardsBloc>().add(
-                      AddBoard(
-                        boardId: _scannedBoardId!,
-                        name: newName,
-                        room: newRoom,
-                      ),
-                    );
-                Navigator.of(context).pop();
-              },
-              child: const Text('Dodaj urządzenie'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    if (_scannedBoardId == null || _scannedBoardId!.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Najpierw zeskanuj QR Code')),
+                      );
+                      return;
+                    }
+                    final newName = _nameController.text;
+                    final newRoom = _selectedRoom ?? '';
+                    context.read<BoardsBloc>().add(
+                          AddBoard(
+                            boardId: _scannedBoardId!,
+                            name: newName,
+                            room: newRoom,
+                          ),
+                        );
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Dodaj urządzenie'),
+                ),
+                if (_scannedBoardId != null && _scannedBoardId!.isNotEmpty)
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ScanEsp32Screen()),
+                      );
+                    },
+                    child: const Text('Skonfiguruj'),
+                  ),
+              ],
             ),
           ],
         ),

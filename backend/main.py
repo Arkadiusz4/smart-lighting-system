@@ -1,6 +1,5 @@
 from utils.qr_code_generator.qr_code_generator import generate_qr_code
-from utils.crypto_utils.encryptor import generate_key
-from mqtt_firebase_connection_wrapper.wrapper import store_encryption_key
+from utils.crypto_utils.encryptor import generate_key, store_encryption_key
 
 if __name__ == "__main__":
     # Generowanie klucza szyfrowania

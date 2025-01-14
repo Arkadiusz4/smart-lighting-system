@@ -4,7 +4,8 @@ import paho.mqtt.client as mqtt
 import json
 
 # Initialize Firebase
-cred = credentials.Certificate("smart-lighting-system-firebase-admin-sdk-credentials.json")
+cred = credentials.Certificate(
+    "mqtt_firebase_connection_wrapper/smart-lighting-system-firebase-admin-sdk-credentials.json")
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
@@ -81,24 +82,3 @@ except KeyboardInterrupt:
     print("Stopping application...")
     mqtt_client.loop_stop()
     mqtt_client.disconnect()
-
-
-def store_encryption_key(mac_address: str, encryption_key: bytes):
-    """
-    Zapisuje klucz szyfrowania w Firebase powiązany z MAC adresem urządzenia.
-
-    :param mac_address: MAC adres urządzenia
-    :param encryption_key: Klucz szyfrowania
-    """
-    try:
-        # Usuń dwukropki z MAC adresu, aby stworzyć prosty identyfikator
-        device_id = mac_address.replace(":", "")
-
-        # Zapisz klucz szyfrowania w Firestore
-        db.collection("devices").document(device_id).set({
-            "mac_address": mac_address,
-            "encryption_key": encryption_key.decode(),  # Zapisz klucz jako string
-        })
-        print(f"Klucz szyfrowania zapisany dla urządzenia: {mac_address}")
-    except Exception as e:
-        print(f"Błąd podczas zapisywania klucza szyfrowania: {e}")

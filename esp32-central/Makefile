@@ -17,10 +17,10 @@ FLASH := idf.py -p $(PORT) -b $(BAUD) flash monitor
 # Targets
 .PHONY: init build flash build-flash erase monitor all
 
-init:
-	@echo -e "$(BLUE)Initializing environment and setting target...$(RESET)"
-	@$(ESP_EXPORT) && $(SET_TARGET)
-	@echo -e "$(GREEN)Initialization complete. Target set to $(TARGET).$(RESET)"
+# init:
+# 	@echo -e "$(BLUE)Initializing environment and setting target...$(RESET)"
+# 	@$(ESP_EXPORT) && $(SET_TARGET)
+# 	@echo -e "$(GREEN)Initialization complete. Target set to $(TARGET).$(RESET)"
 
 flash:
 	@echo -e "$(BLUE)Starting flash process...$(RESET)"

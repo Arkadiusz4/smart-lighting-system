@@ -2,20 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app/models/device.dart';
 
 class DevicesRepository {
-  final String userId;
   final String boardId;
 
   DevicesRepository({
-    required this.userId,
     required this.boardId,
   });
 
-  CollectionReference get _devicesCollection => FirebaseFirestore.instance
-      .collection('users')
-      .doc(userId)
-      .collection('boards')
-      .doc(boardId)
-      .collection('devices');
+  CollectionReference get _devicesCollection =>
+      FirebaseFirestore.instance.collection('boards').doc(boardId).collection('devices');
 
   Future<List<Device>> fetchDevices() async {
     final snapshot = await _devicesCollection.get();
@@ -26,7 +20,7 @@ class DevicesRepository {
         name: data['name'] ?? '',
         type: data['type'] ?? '',
         port: data['port'] ?? '',
-        boardId: data['boardId'] ?? boardId,
+        boardId: boardId,
         status: data['status'],
       );
     }).toList();

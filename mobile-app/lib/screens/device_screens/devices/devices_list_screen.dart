@@ -19,7 +19,7 @@ class DevicesListScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => DevicesBloc(
-        devicesRepository: DevicesRepository(userId: userId, boardId: boardId),
+        devicesRepository: DevicesRepository(boardId: boardId),
         logsRepository: LogsRepository(),
         userId: userId,
         boardId: boardId,

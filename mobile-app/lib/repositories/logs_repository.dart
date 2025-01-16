@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app/models/log_entry.dart';
 
 class LogsRepository {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   Future<List<LogEntry>> fetchLogsFromAllBoards(String userId) async {
     try {
       final logsSnapshot = await FirebaseFirestore.instance
@@ -73,6 +75,22 @@ class LogsRepository {
   Future<void> addLogEntry(LogEntry log) async {
     final CollectionReference logsCollection =
         FirebaseFirestore.instance.collection('users').doc(log.userId).collection('logs');
+
+    await logsCollection.add({
+      'timestamp': Timestamp.fromDate(log.timestamp),
+      'message': log.message,
+      'device': log.device,
+      'boardId': log.boardId,
+      'userId': log.userId,
+      'severity': log.severity,
+      'status': log.status,
+      'wifiStatus': log.wifiStatus,
+      'eventType': log.eventType,
+    });
+  }
+
+  Future<void> addBoardLog(String boardId, LogEntry log) async {
+    final CollectionReference logsCollection = _firestore.collection('boards').doc(boardId).collection('logs');
 
     await logsCollection.add({
       'timestamp': Timestamp.fromDate(log.timestamp),

@@ -49,7 +49,7 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
 
   Future<void> _onEditBoard(EditBoard event, Emitter<BoardsState> emit) async {
     try {
-      await boardsRepository.updateBoard(userId, event.boardId, event.newName, event.newRoom);
+      await boardsRepository.updateBoard(event.boardId, event.newName, event.newRoom);
 
       await logsRepository.addLogEntry(LogEntry(
         timestamp: DateTime.now(),
@@ -77,7 +77,7 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
 
   Future<void> _onRemoveBoard(RemoveBoard event, Emitter<BoardsState> emit) async {
     try {
-      await boardsRepository.removeBoard(userId, event.boardId);
+      await boardsRepository.unassignBoard(event.boardId);
 
       await logsRepository.addLogEntry(LogEntry(
         timestamp: DateTime.now(),
@@ -88,7 +88,7 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
         severity: 'info',
         status: null,
         wifiStatus: null,
-        eventType: 'remove_board',
+        eventType: 'unassign_board',
       ));
 
       final boards = await boardsRepository.fetchBoards(userId);
@@ -105,7 +105,12 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
 
   Future<void> _onAddBoard(AddBoard event, Emitter<BoardsState> emit) async {
     try {
-      await boardsRepository.addBoard(userId, event.boardId, event.name, event.room);
+      await boardsRepository.registerBoard(
+        userId: userId,
+        boardId: event.boardId,
+        name: event.name,
+        room: event.room,
+      );
 
       await logsRepository.addLogEntry(LogEntry(
         timestamp: DateTime.now(),

@@ -40,8 +40,20 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
     );
 
     if (result != null) {
+      final scannedString = result as String;
+      final parts = scannedString.split(';');
+      String? mac;
+      for (var part in parts) {
+        if (part.startsWith('MAC:')) {
+          mac = part.substring(4);
+          break;
+        }
+      }
+      if (mac != null) {
+        mac = mac.replaceAll(":", "");
+      }
       setState(() {
-        _scannedBoardId = result as String;
+        _scannedBoardId = mac ?? '';
       });
     }
   }

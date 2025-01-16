@@ -82,6 +82,14 @@ class BoardsRepository {
 
   Future<void> unassignBoard(String boardId) async {
     try {
+      CollectionReference devicesRef = _firestore.collection('boards').doc(boardId).collection('devices');
+
+      QuerySnapshot devicesSnapshot = await devicesRef.get();
+
+      for (DocumentSnapshot doc in devicesSnapshot.docs) {
+        await doc.reference.delete();
+      }
+
       await _firestore.collection('boards').doc(boardId).update({
         'status': 'available',
         'registered_at': null,
@@ -89,6 +97,8 @@ class BoardsRepository {
         'name': null,
         'room': null,
       });
+
+      print('Board $boardId został unassignowany, a wszystkie urządzenia zostały usunięte.');
     } catch (e) {
       throw Exception('Error unassigning board: $e');
     }

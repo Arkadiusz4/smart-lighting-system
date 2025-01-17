@@ -12,7 +12,7 @@ class FilterDropdown extends StatefulWidget {
 }
 
 class _FilterDropdownState extends State<FilterDropdown> {
-  String _selectedFilter = 'Ostatnia godzina';
+  String _selectedFilter = 'Ostatni dzień';
 
   final Map<String, Duration> filterOptions = {
     'Ostatnia godzina': const Duration(hours: 1),

@@ -4,40 +4,12 @@ import 'package:mobile_app/models/log_entry.dart';
 class LogsRepository {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<List<LogEntry>> fetchLogsFromAllBoards(String userId) async {
+  Future<List<LogEntry>> fetchLogsFromAllBoards(String userId, {DateTime? since}) async {
     try {
-      final logsSnapshot = await FirebaseFirestore.instance
+      Query query = FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
           .collection('logs')
-          .orderBy('timestamp', descending: true)
-          .get();
-
-      return logsSnapshot.docs.map((doc) {
-        final data = doc.data();
-        return LogEntry(
-          timestamp: (data['timestamp'] as Timestamp).toDate(),
-          message: data['message'] ?? '',
-          device: data['device'] ?? '',
-          boardId: data['boardId'] ?? '',
-          userId: data['userId'] ?? '',
-          severity: data['severity'] ?? 'info',
-          status: data['status'],
-          wifiStatus: data['wifiStatus'],
-          eventType: data['eventType'],
-        );
-      }).toList();
-    } catch (e) {
-      print('Error fetching logs: $e');
-      throw Exception('Błąd pobierania logów: $e');
-    }
-  }
-
-  Future<List<LogEntry>> fetchLogs({DateTime? since, required String userId}) async {
-    try {
-      Query query = FirebaseFirestore.instance
-          .collectionGroup('logs')
-          .where('userId', isEqualTo: userId)
           .orderBy('timestamp', descending: true);
 
       if (since != null) {
@@ -45,25 +17,20 @@ class LogsRepository {
         query = query.where('timestamp', isGreaterThanOrEqualTo: timestampSince);
       }
 
-      final querySnapshot = await query.get();
-      print('Fetched ${querySnapshot.docs.length} log(s) from Firestore.');
-      print('Fetched ${querySnapshot.docs.length} log(s) from Firestore.');
-      for (var doc in querySnapshot.docs) {
-        print(doc.data());
-      }
+      final logsSnapshot = await query.get();
 
-      return querySnapshot.docs.map((doc) {
-        final data = doc.data() as Map<String, dynamic>;
-        final extractedBoardId = doc.reference.parent.parent?.id ?? '';
+      return logsSnapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>?;
         return LogEntry(
-          timestamp: (data['timestamp'] as Timestamp).toDate(),
-          message: data['message'] ?? '',
-          device: data['device'] ?? '',
-          boardId: extractedBoardId,
-          userId: data['userId'] ?? '',
-          severity: data['severity'] ?? 'info',
-          status: data['status'],
-          wifiStatus: data['wifiStatus'],
+          timestamp: (data?['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+          message: data?['message'] ?? '',
+          device: data?['device'] ?? '',
+          boardId: data?['boardId'] ?? '',
+          userId: data?['userId'] ?? '',
+          severity: data?['severity'] ?? 'info',
+          status: data?['status'],
+          wifiStatus: data?['wifiStatus'],
+          eventType: data?['eventType'],
         );
       }).toList();
     } catch (e) {

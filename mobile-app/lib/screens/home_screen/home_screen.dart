@@ -51,127 +51,130 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Map<String, List<DevicesBloc>> groupedByRoom = {};
+    for (final bloc in devicesBlocs) {
+      final boardId = bloc.boardId;
+      final room = widget.boardRoomMapping[boardId] ?? 'Nieznany pokój';
+      groupedByRoom.putIfAbsent(room, () => []).add(bloc);
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Ekran Główny'),
+        title: const Text(
+          'Ekran Główny',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 24.0,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         backgroundColor: darkBackground,
       ),
       body: MultiBlocProvider(
         providers: devicesBlocs.map((bloc) => BlocProvider<DevicesBloc>.value(value: bloc)).toList(),
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                children: devicesBlocs.map((bloc) {
-                  return BlocBuilder<DevicesBloc, DevicesState>(
-                    bloc: bloc,
-                    builder: (context, state) {
-                      if (state is DevicesLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      } else if (state is DevicesLoaded) {
-                        final devices = state.devices;
+        child: ListView(
+          children: groupedByRoom.entries.map((entry) {
+            final roomName = entry.key;
+            final roomBlocs = entry.value;
 
-                        if (devices.isEmpty) {
-                          return const Center(
-                            child: Text('Brak urządzeń.', style: TextStyle(color: textColor)),
-                          );
-                        }
-
-                        final boardId = bloc.boardId;
-
-                        final roomName = widget.boardRoomMapping[boardId] ?? 'Nieznany pokój';
-
-                        return Card(
-                          margin: const EdgeInsets.all(8),
-                          color: darkBackground,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(15.0),
-                            side: const BorderSide(color: primaryColor, width: 2.0),
-                          ),
-                          elevation: 5,
-                          shadowColor: primaryColor.withOpacity(0.5),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                ExpansionTile(
-                                  initiallyExpanded: false,
-                                  leading: Icon(getRoomIcon(roomName), color: primaryColor),
+            return Card(
+              margin: const EdgeInsets.all(8.0),
+              color: darkBackground,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+                side: const BorderSide(color: primaryColor, width: 2.0),
+              ),
+              elevation: 5,
+              shadowColor: primaryColor.withOpacity(0.5),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ExpansionTile(
+                  leading: Icon(getRoomIcon(roomName), color: primaryColor),
+                  title: Text(
+                    roomName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: primaryColor,
+                    ),
+                  ),
+                  children: roomBlocs.map((bloc) {
+                    return BlocBuilder<DevicesBloc, DevicesState>(
+                      bloc: bloc,
+                      builder: (context, state) {
+                        if (state is DevicesLoading) {
+                          return const Center(child: CircularProgressIndicator());
+                        } else if (state is DevicesLoaded) {
+                          if (state.devices.isEmpty) {
+                            return const Center(
+                              child: Text('Brak urządzeń.', style: TextStyle(color: textColor)),
+                            );
+                          }
+                          return Column(
+                            children: state.devices.map((Device device) {
+                              if (device.type.toLowerCase() == 'led') {
+                                return ExpansionTile(
+                                  leading: Icon(getDeviceIcon(device.type), color: primaryColor),
                                   title: Text(
-                                    roomName,
+                                    device.name,
                                     style: const TextStyle(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: primaryColor,
+                                      color: textColor,
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  children: devices.map((Device device) {
-                                    if (device.type.toLowerCase() == 'led') {
-                                      return ExpansionTile(
-                                        initiallyExpanded: false,
-                                        leading: Icon(getDeviceIcon(device.type), color: primaryColor),
-                                        title: Text(
-                                          device.name,
-                                          style: const TextStyle(
-                                            color: textColor,
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        subtitle: Text(
-                                          'Port: ${device.port}, status: ${device.status ?? 'off'}',
-                                          style: const TextStyle(
-                                            color: textColor,
-                                            fontSize: 14.0,
-                                            fontWeight: FontWeight.w400,
-                                          ),
-                                        ),
-                                        children: [
-                                          LedSwitch(
-                                            device: device,
-                                            userId: widget.userId,
-                                            devicesBloc: bloc,
-                                          ),
-                                        ],
-                                      );
-                                    } else {
-                                      return ListTile(
-                                        leading: Icon(getDeviceIcon(device.type), color: primaryColor),
-                                        title: Text(
-                                          device.name,
-                                          style: const TextStyle(
-                                            color: textColor,
-                                            fontSize: 16.0,
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                        ),
-                                        subtitle: Text('Port: ${device.port}, status: ${device.status ?? 'off'}',
-                                            style: const TextStyle(
-                                              color: textColor,
-                                              fontSize: 14.0,
-                                              fontWeight: FontWeight.w400,
-                                            )),
-                                      );
-                                    }
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      } else if (state is DevicesError) {
-                        return Center(
-                          child: Text('Błąd: ${state.message}', style: const TextStyle(color: textColor)),
-                        );
-                      }
-                      return const SizedBox();
-                    },
-                  );
-                }).toList(),
+                                  subtitle: Text(
+                                    'Port: ${device.port}, status: ${device.status ?? 'off'}',
+                                    style: const TextStyle(
+                                      color: textColor,
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  children: [
+                                    LedSwitch(
+                                      device: device,
+                                      userId: widget.userId,
+                                      devicesBloc: bloc,
+                                    ),
+                                  ],
+                                );
+                              } else {
+                                return ListTile(
+                                  leading: Icon(getDeviceIcon(device.type), color: primaryColor),
+                                  title: Text(
+                                    device.name,
+                                    style: const TextStyle(
+                                      color: textColor,
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'Port: ${device.port}, status: ${device.status ?? 'off'}',
+                                    style: const TextStyle(
+                                      color: textColor,
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                );
+                              }
+                            }).toList(),
+                          );
+                        } else if (state is DevicesError) {
+                          return ListTile(
+                            title: Text('Błąd: ${state.message}', style: const TextStyle(color: textColor)),
+                          );
+                        }
+                        return const SizedBox();
+                      },
+                    );
+                  }).toList(),
+                ),
               ),
-            ),
-          ],
+            );
+          }).toList(),
         ),
       ),
     );

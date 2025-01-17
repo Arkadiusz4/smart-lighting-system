@@ -15,7 +15,7 @@ class LogIconHelper {
       return Icons.add;
     } else if (log.eventType == 'edit_board') {
       return Icons.edit;
-    } else if (log.eventType == 'remove_board') {
+    } else if (log.eventType == 'unassign_board') {
       return Icons.delete;
     } else if (log.eventType == 'add_device') {
       return Icons.add_box;
@@ -32,10 +32,10 @@ class LogIconHelper {
         return Icons.wifi;
       }
     }
-    if (log.device == 'LED') {
-      if (log.status == 'on') {
+    if (log.device == 'Device') {
+      if (log.eventType == 'led_on') {
         return Icons.lightbulb;
-      } else if (log.status == 'off') {
+      } else if (log.eventType == 'led_off') {
         return Icons.lightbulb_outline;
       }
     }
@@ -57,7 +57,7 @@ class LogIconHelper {
       return Colors.green;
     } else if (log.eventType == 'edit_board' || log.eventType == 'edit_device') {
       return Colors.blue;
-    } else if (log.eventType == 'remove_board' || log.eventType == 'remove_device') {
+    } else if (log.eventType == 'unassign_board' || log.eventType == 'remove_device') {
       return Colors.red;
     }
 

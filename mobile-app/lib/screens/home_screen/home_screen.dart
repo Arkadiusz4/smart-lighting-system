@@ -106,8 +106,18 @@ class _HomeScreenState extends State<HomeScreen> {
                           return const Center(child: CircularProgressIndicator());
                         } else if (state is DevicesLoaded) {
                           if (state.devices.isEmpty) {
-                            return const Center(
-                              child: Text('Brak urządzeń.', style: TextStyle(color: textColor)),
+                            return const Padding(
+                              padding: EdgeInsets.all(15.0),
+                              child: Center(
+                                child: Text(
+                                  'Brak urządzeń.',
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                             );
                           }
                           return Column(

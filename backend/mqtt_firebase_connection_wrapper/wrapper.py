@@ -15,7 +15,7 @@ print("Connected to Firebase successfully!")
 BROKER_ADDRESS = "localhost"
 BROKER_PORT = 1883
 MQTT_TOPICS = ["local/sensors/temperature", "test_sensor_data"]
-
+device_listeners = {}
 
 def write_to_firestore(collection_name, document_data):
     """Writes data to Firestore."""
@@ -37,12 +37,40 @@ def on_firestore_snapshot(col_snapshot, changes, read_time):
             print(f"Document removed: {change.document.id}")
 
 
-# Subscribe to Firestore changes
-collection_ref = db.collection("test_collection")
-collection_watch = collection_ref.on_snapshot(on_firestore_snapshot)
+
+def on_devices_snapshot(col_snapshot, changes, read_time):
+    """Callback for device subcollection updates."""
+    for change in changes:
+        if change.type.name == "ADDED":
+            print(f"New device added: {change.document.id} => {change.document.to_dict()}")
+        elif change.type.name == "MODIFIED":
+            print(f"Device modified: {change.document.id} => {change.document.to_dict()}")
+        elif change.type.name == "REMOVED":
+            print(f"Device removed: {change.document.id}")
 
 
-# MQTT Callbacks
+def on_boards_snapshot(col_snapshot, changes, read_time):
+    """Callback for boards collection updates."""
+    for change in changes:
+        if change.type.name == "ADDED":
+            board_id = change.document.id
+            print(f"New board added: {board_id}")
+            
+            devices_ref = db.collection(f"boards/{board_id}/devices")
+            device_listeners[board_id] = devices_ref.on_snapshot(on_devices_snapshot)
+            print(f"Subscribed to devices for board: {board_id}")
+        elif change.type.name == "REMOVED":
+            board_id = change.document.id
+            print(f"Board removed: {board_id}")
+            
+            if board_id in device_listeners:
+                device_listeners[board_id].unsubscribe()
+                del device_listeners[board_id]
+                print(f"Unsubscribed from devices for board: {board_id}")
+
+boards_ref = db.collection("boards")
+boards_listener = boards_ref.on_snapshot(on_boards_snapshot)
+
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
         print("Connected to MQTT broker!")
@@ -56,9 +84,8 @@ def on_connect(client, userdata, flags, rc):
 def on_message(client, userdata, msg):
     try:
         payload = msg.payload.decode()
-        data = json.loads(payload)  # Assuming the payload is JSON
+        data = json.loads(payload)  
         print(f"Received message on {msg.topic}: {data}")
-        # Write the message to Firestore
         write_to_firestore("mqtt_data", {"topic": msg.topic, "data": data})
     except json.JSONDecodeError:
         print(f"Failed to decode message payload: {msg.payload}")
@@ -73,7 +100,6 @@ mqtt_client.on_message = on_message
 mqtt_client.connect(BROKER_ADDRESS, BROKER_PORT, 60)
 mqtt_client.loop_start()
 
-# Keep the program running
 try:
     print("Application is running. Press Ctrl+C to stop.")
     while True:

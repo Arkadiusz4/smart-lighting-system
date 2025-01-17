@@ -52,6 +52,7 @@ class RegisterScreen extends StatelessWidget {
                               email: email,
                               password: password,
                             ));
+                        Navigator.pop(context);
                       } else {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Proszę wprowadzić email i hasło')),

@@ -26,7 +26,14 @@ class DevicesListScreen extends StatelessWidget {
       )..add(LoadDevices()),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Urządzenia na boardzie $boardId'),
+          title: Text(
+            'Urządzenia na boardzie $boardId',
+            style: const TextStyle(
+              color: textColor,
+              fontSize: 24.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           backgroundColor: darkBackground,
         ),
         body: BlocBuilder<DevicesBloc, DevicesState>(
@@ -37,7 +44,10 @@ class DevicesListScreen extends StatelessWidget {
               final devices = state.devices;
               if (devices.isEmpty) {
                 return const Center(
-                  child: Text('Brak urządzeń.', style: TextStyle(color: textColor)),
+                  child: Text(
+                    'Brak urządzeń.',
+                    style: TextStyle(color: textColor, fontSize: 22.0, fontWeight: FontWeight.w500),
+                  ),
                 );
               }
               return ListView.builder(
@@ -45,9 +55,22 @@ class DevicesListScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final device = devices[index];
                   return ListTile(
-                    title: Text(device.name, style: const TextStyle(color: textColor)),
-                    subtitle:
-                        Text('Typ: ${device.type}, Port: ${device.port}', style: const TextStyle(color: textColor)),
+                    title: Text(
+                      device.name,
+                      style: const TextStyle(
+                        color: textColor,
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    subtitle: Text(
+                      'Typ: ${device.type}, Port: ${device.port}',
+                      style: const TextStyle(
+                        color: textColor,
+                        fontSize: 14.0,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -68,7 +91,61 @@ class DevicesListScreen extends StatelessWidget {
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
                           onPressed: () {
-                            context.read<DevicesBloc>().add(RemoveDevice(device.deviceId));
+                            final devicesBloc = context.read<DevicesBloc>();
+
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  backgroundColor: darkBackground,
+                                  title: const Text(
+                                    "Potwierdzenie",
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 22.0,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  content: const Text(
+                                    "Czy na pewno chcesz usunąć to urządzenie?",
+                                    style: TextStyle(
+                                      color: textColor,
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: const Text(
+                                        "Nie",
+                                        style: TextStyle(
+                                          color: primaryColor,
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        devicesBloc.add(RemoveDevice(device.deviceId));
+                                      },
+                                      child: const Text(
+                                        "Tak",
+                                        style: TextStyle(
+                                          color: primaryColor,
+                                          fontSize: 16.0,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
                           },
                         ),
                       ],

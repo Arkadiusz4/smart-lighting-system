@@ -37,7 +37,14 @@ class _LedSwitchState extends State<LedSwitch> {
   @override
   Widget build(BuildContext context) {
     return SwitchListTile(
-      title: const Text('Włącz/wyłącz LED', style: TextStyle(color: textColor)),
+      title: const Text(
+        'Włącz/wyłącz LED',
+        style: TextStyle(
+          color: textColor,
+          fontSize: 16.0,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
       value: currentValue,
       onChanged: (bool value) {
         setState(() {

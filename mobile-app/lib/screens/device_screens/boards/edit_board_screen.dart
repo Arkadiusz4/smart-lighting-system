@@ -19,7 +19,15 @@ class _EditBoardScreenState extends State<EditBoardScreen> {
 
   String? _selectedRoom;
 
-  final List<String> _rooms = ['Salon', 'Sypialnia', 'Kuchnia', 'Łazienka', 'Korytarz', 'Biuro'];
+  final List<String> _rooms = [
+    'Salon',
+    'Sypialnia',
+    'Kuchnia',
+    'Łazienka',
+    'Biuro',
+    'Korytarz',
+    'Inne',
+  ];
 
   @override
   void initState() {
@@ -38,7 +46,14 @@ class _EditBoardScreenState extends State<EditBoardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edycja urządzenia'),
+        title: const Text(
+          'Edycja urządzenia',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 24.0,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         backgroundColor: darkBackground,
       ),
       body: Padding(
@@ -47,18 +62,37 @@ class _EditBoardScreenState extends State<EditBoardScreen> {
           children: [
             TextField(
               controller: _nameController,
+              style: const TextStyle(
+                color: textColor,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600,
+              ),
               decoration: const InputDecoration(
                 labelText: 'Nazwa urządzenia',
-                hintStyle: TextStyle(color: textColor),
+                labelStyle: TextStyle(
+                  color: textColor,
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w300,
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 16.0),
             DropdownButtonFormField<String>(
-              style: const TextStyle(color: textColor, fontSize: 18),
-              dropdownColor: Colors.indigo[800],
-              borderRadius: BorderRadius.circular(10),
+              style: const TextStyle(
+                color: textColor,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600,
+              ),
+              dropdownColor: Colors.indigo,
               value: _selectedRoom,
-              decoration: const InputDecoration(labelText: 'Pokój'),
+              decoration: const InputDecoration(
+                labelText: 'Pokój',
+                labelStyle: TextStyle(
+                  color: textColor,
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
               items: _rooms.map((room) {
                 return DropdownMenuItem(
                   value: room,
@@ -71,7 +105,7 @@ class _EditBoardScreenState extends State<EditBoardScreen> {
                 });
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 50.0),
             ElevatedButton(
               onPressed: () {
                 final newName = _nameController.text;
@@ -85,7 +119,13 @@ class _EditBoardScreenState extends State<EditBoardScreen> {
                     );
                 Navigator.of(context).pop();
               },
-              child: const Text('Zapisz zmiany'),
+              child: const Text(
+                'Zapisz zmiany',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),

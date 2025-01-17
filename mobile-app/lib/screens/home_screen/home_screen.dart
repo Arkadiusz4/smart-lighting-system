@@ -32,7 +32,14 @@ class HomeScreen extends StatelessWidget {
       )..add(LoadDevices()),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Ekran Główny'),
+          title: const Text(
+            'Ekran Główny',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 24.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           backgroundColor: darkBackground,
         ),
         body: BlocBuilder<DevicesBloc, DevicesState>(
@@ -91,10 +98,21 @@ class HomeScreen extends StatelessWidget {
                                       return ExpansionTile(
                                         initiallyExpanded: false,
                                         leading: Icon(getDeviceIcon(device.type), color: primaryColor),
-                                        title: Text(device.name, style: const TextStyle(color: textColor)),
+                                        title: Text(
+                                          device.name,
+                                          style: const TextStyle(
+                                            color: textColor,
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
                                         subtitle: Text(
                                           'Port: ${device.port}, status: ${device.status ?? 'off'}',
-                                          style: const TextStyle(color: textColor),
+                                          style: const TextStyle(
+                                            color: textColor,
+                                            fontSize: 14.0,
+                                            fontWeight: FontWeight.w400,
+                                          ),
                                         ),
                                         children: [
                                           LedSwitch(device: device, userId: userId),
@@ -103,10 +121,21 @@ class HomeScreen extends StatelessWidget {
                                     } else {
                                       return ListTile(
                                         leading: Icon(getDeviceIcon(device.type), color: primaryColor),
-                                        title: Text(device.name, style: const TextStyle(color: textColor)),
+                                        title: Text(
+                                          device.name,
+                                          style: const TextStyle(
+                                            color: textColor,
+                                            fontSize: 16.0,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
                                         subtitle: Text(
                                           'Port: ${device.port}, status: ${device.status ?? 'off'}',
-                                          style: const TextStyle(color: textColor),
+                                          style: const TextStyle(
+                                            color: textColor,
+                                            fontSize: 14.0,
+                                            fontWeight: FontWeight.w400,
+                                          ),
                                         ),
                                       );
                                     }

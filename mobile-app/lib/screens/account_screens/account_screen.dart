@@ -30,7 +30,14 @@ class AccountScreen extends StatelessWidget {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Twoje Konto'),
+          title: const Text(
+            'Twoje Konto',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 24.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
         body: Container(
           color: darkBackground,
@@ -66,26 +73,6 @@ class AccountScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 30.0),
                     child: Column(
                       children: [
-                        // ElevatedButton(
-                        //   onPressed: () async {
-                        //     final user = FirebaseAuth.instance.currentUser;
-                        //     if (user != null) {
-                        //       final logEntry = LogEntry(
-                        //         timestamp: DateTime.now(),
-                        //         message: 'Testowy log',
-                        //         device: 'LED',
-                        //         boardId: 'ESP32_1',
-                        //         userId: user.uid,
-                        //         severity: 'info',
-                        //         status: 'on',
-                        //         wifiStatus: 'connected',
-                        //       );
-                        //       await LogsRepository().addLogEntry(logEntry);
-                        //       print('Log entry added.');
-                        //     }
-                        //   },
-                        //   child: Text('Dodaj testowy log'),
-                        // ),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton.icon(

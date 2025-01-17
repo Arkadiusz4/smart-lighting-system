@@ -25,7 +25,14 @@ class LogsScreen extends StatelessWidget {
       )..add(const LoadLogs()),
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Logi'),
+          title: const Text(
+            'Logi',
+            style: TextStyle(
+              color: textColor,
+              fontSize: 24.0,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
           backgroundColor: darkBackground,
         ),
         body: Container(

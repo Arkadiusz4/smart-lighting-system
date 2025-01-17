@@ -32,7 +32,14 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dodaj urządzenie'),
+        title: const Text(
+          'Dodaj urządzenie',
+          style: const TextStyle(
+            color: textColor,
+            fontSize: 24.0,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         backgroundColor: darkBackground,
       ),
       body: Padding(
@@ -41,11 +48,36 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Nazwa urządzenia'),
+              style: const TextStyle(
+                color: textColor,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Nazwa urządzenia',
+                labelStyle: TextStyle(
+                  color: textColor,
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: 'Typ urządzenia'),
+              dropdownColor: Colors.indigo,
+              style: const TextStyle(
+                color: textColor,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Typ urządzenia',
+                labelStyle: TextStyle(
+                  color: textColor,
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
               value: _devices.first,
               items: _devices.map((device) {
                 return DropdownMenuItem(
@@ -61,7 +93,20 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              decoration: const InputDecoration(labelText: 'Port'),
+              dropdownColor: Colors.indigo,
+              style: const TextStyle(
+                color: textColor,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Port',
+                labelStyle: TextStyle(
+                  color: textColor,
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
               value: _ports.first,
               items: _ports.map((port) {
                 return DropdownMenuItem(
@@ -75,7 +120,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                 });
               },
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 50.0),
             ElevatedButton(
               onPressed: () {
                 final name = _nameController.text;
@@ -95,7 +140,13 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                 devicesBloc.add(AddDevice(device));
                 Navigator.of(context).pop();
               },
-              child: const Text('Dodaj urządzenie'),
+              child: const Text(
+                'Dodaj urządzenie',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ],
         ),

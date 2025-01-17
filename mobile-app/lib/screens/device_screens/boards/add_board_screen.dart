@@ -18,7 +18,15 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   String? _selectedRoom;
   String? _scannedBoardId;
 
-  final List<String> _rooms = ['Salon', 'Sypialnia', 'Kuchnia', 'Łazienka'];
+  final List<String> _rooms = [
+    'Salon',
+    'Sypialnia',
+    'Kuchnia',
+    'Łazienka',
+    'Biuro',
+    'Korytarz',
+    'Inne',
+  ];
 
   @override
   void initState() {
@@ -62,7 +70,14 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dodaj urządzenie'),
+        title: const Text(
+          'Dodaj urządzenie',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 24.0,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         backgroundColor: darkBackground,
       ),
       body: Padding(
@@ -71,12 +86,37 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
           children: [
             TextField(
               controller: _nameController,
-              decoration: const InputDecoration(labelText: 'Nazwa urządzenia'),
+              style: const TextStyle(
+                color: textColor,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Nazwa urządzenia',
+                labelStyle: TextStyle(
+                  color: textColor,
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 16.0),
             DropdownButtonFormField<String>(
+              style: const TextStyle(
+                color: textColor,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600,
+              ),
+              dropdownColor: Colors.indigo,
               value: _selectedRoom,
-              decoration: const InputDecoration(labelText: 'Pokój'),
+              decoration: const InputDecoration(
+                labelText: 'Pokój',
+                labelStyle: TextStyle(
+                  color: textColor,
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
               items: _rooms.map((room) {
                 return DropdownMenuItem(
                   value: room,
@@ -89,13 +129,19 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                 });
               },
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 50.0),
             ElevatedButton.icon(
               onPressed: _scanQRCode,
               icon: const Icon(Icons.qr_code_scanner),
-              label: const Text('Zeskanuj QR Code'),
+              label: const Text(
+                'Zeskanuj QR Code',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20.0),
             Text(
               _scannedBoardId != null && _scannedBoardId!.isNotEmpty
                   ? 'Zeskanowany Board ID: $_scannedBoardId'
@@ -103,41 +149,50 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
               style: const TextStyle(color: textColor),
             ),
             const Spacer(),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    if (_scannedBoardId == null || _scannedBoardId!.isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Najpierw zeskanuj QR Code')),
-                      );
-                      return;
-                    }
-                    final newName = _nameController.text;
-                    final newRoom = _selectedRoom ?? '';
-                    context.read<BoardsBloc>().add(
-                          AddBoard(
-                            boardId: _scannedBoardId!,
-                            name: newName,
-                            room: newRoom,
-                          ),
-                        );
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Dodaj urządzenie'),
-                ),
-                if (_scannedBoardId != null && _scannedBoardId!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 40.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ScanEsp32Screen()),
-                      );
+                      if (_scannedBoardId == null || _scannedBoardId!.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Najpierw zeskanuj QR Code')),
+                        );
+                        return;
+                      }
+                      final newName = _nameController.text;
+                      final newRoom = _selectedRoom ?? '';
+                      context.read<BoardsBloc>().add(
+                            AddBoard(
+                              boardId: _scannedBoardId!,
+                              name: newName,
+                              room: newRoom,
+                            ),
+                          );
+                      Navigator.of(context).pop();
                     },
-                    child: const Text('Skonfiguruj'),
+                    child: const Text(
+                      'Dodaj urządzenie',
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
-              ],
+                  if (_scannedBoardId != null && _scannedBoardId!.isNotEmpty)
+                    ElevatedButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ScanEsp32Screen()),
+                        );
+                      },
+                      child: const Text('Skonfiguruj'),
+                    ),
+                ],
+              ),
             ),
           ],
         ),

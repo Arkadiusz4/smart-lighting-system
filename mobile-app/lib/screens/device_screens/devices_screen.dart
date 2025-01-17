@@ -18,7 +18,14 @@ class DevicesScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Zarządzanie Urządzeniami'),
+        title: const Text(
+          'Zarządzanie Urządzeniami',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 24.0,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
         backgroundColor: darkBackground,
       ),
       body: BlocBuilder<BoardsBloc, BoardsState>(
@@ -42,11 +49,19 @@ class DevicesScreen extends StatelessWidget {
                 return ListTile(
                   title: Text(
                     board.name.isNotEmpty ? board.name : board.boardId,
-                    style: const TextStyle(color: textColor),
+                    style: const TextStyle(
+                      color: textColor,
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   subtitle: Text(
                     board.room.isNotEmpty ? board.room : 'Nieprzypisany pokój',
-                    style: const TextStyle(color: textColor),
+                    style: const TextStyle(
+                      color: textColor,
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -68,7 +83,61 @@ class DevicesScreen extends StatelessWidget {
                       IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () {
-                          context.read<BoardsBloc>().add(RemoveBoard(board.boardId));
+                          final devicesBloc = context.read<BoardsBloc>();
+
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return AlertDialog(
+                                backgroundColor: darkBackground,
+                                title: const Text(
+                                  "Potwierdzenie",
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 22.0,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                content: const Text(
+                                  "Czy na pewno chcesz usunąć to urządzenie?",
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 16.0,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: const Text(
+                                      "Nie",
+                                      style: TextStyle(
+                                        color: primaryColor,
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      devicesBloc.add(RemoveBoard(board.boardId));
+                                    },
+                                    child: const Text(
+                                      "Tak",
+                                      style: TextStyle(
+                                        color: primaryColor,
+                                        fontSize: 16.0,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          );
                         },
                       ),
                     ],

@@ -11,14 +11,13 @@ import 'package:mobile_app/screens/home_screen/led_switch.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userId;
-  final Map<String, String> boardRoomMapping; // Map of boardId to room
+  final Map<String, String> boardRoomMapping;
 
   const HomeScreen({
     super.key,
     required this.userId,
     required this.boardRoomMapping,
-  }
-  );
+  });
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -58,9 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: darkBackground,
       ),
       body: MultiBlocProvider(
-        providers: devicesBlocs
-            .map((bloc) => BlocProvider<DevicesBloc>.value(value: bloc))
-            .toList(),
+        providers: devicesBlocs.map((bloc) => BlocProvider<DevicesBloc>.value(value: bloc)).toList(),
         child: Column(
           children: [
             Expanded(
@@ -76,24 +73,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
                         if (devices.isEmpty) {
                           return const Center(
-                            child: Text('Brak urządzeń.',
-                                style: TextStyle(color: textColor)),
+                            child: Text('Brak urządzeń.', style: TextStyle(color: textColor)),
                           );
                         }
 
-                        // Retrieve the room name from the boardId
                         final boardId = bloc.boardId;
 
-                        final roomName = widget.boardRoomMapping[boardId] ??
-                            'Nieznany pokój';
+                        final roomName = widget.boardRoomMapping[boardId] ?? 'Nieznany pokój';
 
                         return Card(
                           margin: const EdgeInsets.all(8),
                           color: darkBackground,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(15.0),
-                            side: const BorderSide(
-                                color: primaryColor, width: 2.0),
+                            side: const BorderSide(color: primaryColor, width: 2.0),
                           ),
                           elevation: 5,
                           shadowColor: primaryColor.withOpacity(0.5),
@@ -104,8 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 ExpansionTile(
                                   initiallyExpanded: false,
-                                  leading: Icon(getRoomIcon(roomName),
-                                      color: primaryColor),
+                                  leading: Icon(getRoomIcon(roomName), color: primaryColor),
                                   title: Text(
                                     roomName,
                                     style: const TextStyle(
@@ -134,12 +126,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                             fontSize: 14.0,
                                             fontWeight: FontWeight.w400,
                                           ),
-
                                         ),
                                         children: [
                                           LedSwitch(
-                                              device: device,
-                                              userId: widget.userId),
+                                            device: device,
+                                            userId: widget.userId,
+                                            devicesBloc: bloc,
+                                          ),
                                         ],
                                       );
                                     } else {
@@ -153,14 +146,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                             fontWeight: FontWeight.w700,
                                           ),
                                         ),
-                                        subtitle: Text(
-                                          'Port: ${device.port}, status: ${device.status ?? 'off'}',
-                                          style: const TextStyle(
-                                            color: textColor,
-                                            fontSize: 14.0,
-                                            fontWeight: FontWeight.w400,
-                                          )
-                                        ),
+                                        subtitle: Text('Port: ${device.port}, status: ${device.status ?? 'off'}',
+                                            style: const TextStyle(
+                                              color: textColor,
+                                              fontSize: 14.0,
+                                              fontWeight: FontWeight.w400,
+                                            )),
                                       );
                                     }
                                   }).toList(),
@@ -171,8 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         );
                       } else if (state is DevicesError) {
                         return Center(
-                          child: Text('Błąd: ${state.message}',
-                              style: const TextStyle(color: textColor)),
+                          child: Text('Błąd: ${state.message}', style: const TextStyle(color: textColor)),
                         );
                       }
                       return const SizedBox();

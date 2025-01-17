@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/devices/devices_bloc.dart';
 import 'package:mobile_app/blocs/devices/devices_event.dart';
 import 'package:mobile_app/models/device.dart';
@@ -8,8 +7,14 @@ import 'package:mobile_app/styles/color.dart';
 class LedSwitch extends StatefulWidget {
   final Device device;
   final String userId;
+  final DevicesBloc devicesBloc;
 
-  const LedSwitch({super.key, required this.device, required this.userId});
+  const LedSwitch({
+    super.key,
+    required this.device,
+    required this.userId,
+    required this.devicesBloc,
+  });
 
   @override
   _LedSwitchState createState() => _LedSwitchState();
@@ -51,9 +56,9 @@ class _LedSwitchState extends State<LedSwitch> {
           currentValue = value;
         });
         print("Toggle LED clicked, new value: $value, ${widget.device.boardId}");
-        context.read<DevicesBloc>().add(
-              ToggleLed(widget.device.deviceId, value),
-            );
+        widget.devicesBloc.add(
+          ToggleLed(widget.device.deviceId, value),
+        );
       },
     );
   }

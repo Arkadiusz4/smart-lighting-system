@@ -19,6 +19,7 @@ class MainNavigationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    Map<String, String> boardRoomMapping = Map();
 
     return Scaffold(
       body: BlocBuilder<NavigationBloc, NavigationState>(
@@ -33,11 +34,9 @@ class MainNavigationScreen extends StatelessWidget {
 
               if (boardsState is BoardsLoaded && boardsState.currentBoardId != null && boardsState.boards.isNotEmpty) {
                 currentBoardId = boardsState.currentBoardId;
-                final selectedBoard = boardsState.boards.firstWhere(
-                  (board) => board.boardId == currentBoardId,
-                  orElse: () => boardsState.boards.first,
-                );
-                room = selectedBoard.room;
+                boardRoomMapping = {
+                  for (var board in boardsState.boards) board.boardId: board.room
+                };
               }
 
               if (currentBoardId == null) {
@@ -46,8 +45,8 @@ class MainNavigationScreen extends StatelessWidget {
 
               return HomeScreen(
                 userId: userId,
-                boardId: currentBoardId,
-                room: room,
+                boardRoomMapping: boardRoomMapping,
+
               );
 
             case 1:

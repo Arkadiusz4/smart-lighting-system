@@ -1,3 +1,4 @@
 .DS_Store
 mqtt_firebase_connection_wrapper\.idea
 backend/mqtt_firebase_connection_wrapper/smart-lighting-system-firebase-admin-sdk-credentials.json
+mobile-app/ios/Runner/GoogleService-Info.plist.json

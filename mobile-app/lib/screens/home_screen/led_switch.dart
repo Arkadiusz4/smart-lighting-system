@@ -50,7 +50,7 @@ class _LedSwitchState extends State<LedSwitch> {
         setState(() {
           currentValue = value;
         });
-        print("Toggle LED clicked, new value: $value");
+        print("Toggle LED clicked, new value: $value, ${widget.device.boardId}");
         context.read<DevicesBloc>().add(
               ToggleLed(widget.device.deviceId, value),
             );

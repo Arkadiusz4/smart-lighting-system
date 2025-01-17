@@ -55,6 +55,7 @@ class DevicesListScreen extends StatelessWidget {
                 itemBuilder: (context, index) {
                   final device = devices[index];
                   return ListTile(
+<<<<<<< Updated upstream
                     title: Text(
                       device.name,
                       style: const TextStyle(
@@ -71,6 +72,11 @@ class DevicesListScreen extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
+=======
+                    title: Text(device.name, style: const TextStyle(color: textColor)),
+                    subtitle:
+                        Text('Typ: ${device.type}, Port: ${device.port}, Status: ${device.status} ', style: const TextStyle(color: textColor)),
+>>>>>>> Stashed changes
                     trailing: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [

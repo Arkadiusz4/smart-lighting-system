@@ -52,38 +52,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-<<<<<<< Updated upstream
-    return BlocProvider<DevicesBloc>(
-      create: (_) => DevicesBloc(
-        devicesRepository: DevicesRepository(boardId: boardId),
-        logsRepository: LogsRepository(),
-        userId: userId,
-        boardId: boardId,
-      )..add(LoadDevices()),
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Ekran Główny',
-            style: TextStyle(
-              color: textColor,
-              fontSize: 24.0,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          backgroundColor: darkBackground,
-        ),
-        body: BlocBuilder<DevicesBloc, DevicesState>(
-          builder: (context, state) {
-            if (state is DevicesLoading) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (state is DevicesLoaded) {
-              final devices = state.devices;
-              if (devices.isEmpty) {
-                return const Center(
-                  child: Text('Brak urządzeń.', style: TextStyle(color: textColor)),
-                );
-              }
-=======
     return Scaffold(
       appBar: AppBar(
         title: const Text('Ekran Główny'),
@@ -105,7 +73,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         return const Center(child: CircularProgressIndicator());
                       } else if (state is DevicesLoaded) {
                         final devices = state.devices;
->>>>>>> Stashed changes
 
                         if (devices.isEmpty) {
                           return const Center(
@@ -151,7 +118,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                     if (device.type.toLowerCase() == 'led') {
                                       return ExpansionTile(
                                         initiallyExpanded: false,
-<<<<<<< Updated upstream
                                         leading: Icon(getDeviceIcon(device.type), color: primaryColor),
                                         title: Text(
                                           device.name,
@@ -168,18 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             fontSize: 14.0,
                                             fontWeight: FontWeight.w400,
                                           ),
-=======
-                                        leading: Icon(
-                                            getDeviceIcon(device.type),
-                                            color: primaryColor),
-                                        title: Text(device.name,
-                                            style: const TextStyle(
-                                                color: textColor)),
-                                        subtitle: Text(
-                                          'Port: ${device.port}, status: ${device.status ?? 'off'} ${device.deviceId} ${device.boardId}' ,
-                                          style:
-                                              const TextStyle(color: textColor),
->>>>>>> Stashed changes
+
                                         ),
                                         children: [
                                           LedSwitch(
@@ -189,7 +144,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                       );
                                     } else {
                                       return ListTile(
-<<<<<<< Updated upstream
                                         leading: Icon(getDeviceIcon(device.type), color: primaryColor),
                                         title: Text(
                                           device.name,
@@ -205,19 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             color: textColor,
                                             fontSize: 14.0,
                                             fontWeight: FontWeight.w400,
-                                          ),
-=======
-                                        leading: Icon(
-                                            getDeviceIcon(device.type),
-                                            color: primaryColor),
-                                        title: Text(device.name,
-                                            style: const TextStyle(
-                                                color: textColor)),
-                                        subtitle: Text(
-                                          'Port: ${device.port}, status: ${device.status ?? 'off'}',
-                                          style:
-                                              const TextStyle(color: textColor),
->>>>>>> Stashed changes
+                                          )
                                         ),
                                       );
                                     }

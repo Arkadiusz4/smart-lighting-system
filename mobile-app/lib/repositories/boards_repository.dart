@@ -33,6 +33,13 @@ class BoardsRepository {
     final boardRef = _firestore.collection('boards').doc(boardId);
     final boardDoc = await boardRef.get();
 
+    final mqttClientRef = _firestore
+        .collection('mqtt_clients')
+        .where('boardId', isEqualTo: boardId)
+        .where('clientId', isEqualTo: userId);
+
+    final querySnapshot = await mqttClientRef.get();
+
     if (!boardDoc.exists) {
       print('Board nie istnieje, tworzenie nowego dokumentu');
       await boardRef.set({
@@ -59,6 +66,33 @@ class BoardsRepository {
         'room': room,
       });
     }
+
+    if (querySnapshot.docs.isEmpty) {
+      // If no document matches the query, create a new mqtt_client document
+      print("Klient nie istnieje, tworzenie nowego mqtt_clienta");
+      await _firestore.collection('mqtt_clients').add({
+        'boardId': boardId,
+        'mqtt_password': '',
+        'userId': userId,
+      });
+    } else {
+      // If a document exists, process it
+      final mqttClientDoc = querySnapshot.docs.first;
+      final data = mqttClientDoc.data();
+      print('MqttClient już istnieje: $data');
+
+      if (data != null && data['userId'] != null && data['userId'] != userId) {
+        // Throw an error if the device is already assigned to another user
+        throw Exception('Urządzenie jest już przypisane do innego użytkownika.');
+      }
+
+      // Update the existing document
+      await mqttClientDoc.reference.update({
+        'mqtt_password': '',
+        'userId': userId,
+      });
+    }
+
   }
 
   Future<void> updateBoard(String boardId, String newName, String newRoom) async {
@@ -80,7 +114,7 @@ class BoardsRepository {
     }
   }
 
-  Future<void> unassignBoard(String boardId) async {
+  Future<void> unassignBoard(String boardId, String userId) async {
     try {
       CollectionReference devicesRef = _firestore.collection('boards').doc(boardId).collection('devices');
 
@@ -97,6 +131,22 @@ class BoardsRepository {
         'name': null,
         'room': null,
       });
+
+      final mqttClientRef = _firestore
+          .collection('mqtt_clients')
+          .where('boardId', isEqualTo: boardId)
+          .where('userId', isEqualTo: userId);
+          print("After query");
+          print(boardId);
+          print(userId);
+
+      final querySnapshot = await mqttClientRef.get();
+      if (querySnapshot.docs.isNotEmpty){
+        final mqttClientDoc = querySnapshot.docs.first;
+        print("Inside if");
+        mqttClientDoc.reference.delete();
+      }
+
 
       print('Board $boardId został unassignowany, a wszystkie urządzenia zostały usunięte.');
     } catch (e) {

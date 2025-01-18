@@ -26,11 +26,12 @@ class EditBoard extends BoardsEvent {
 
 class RemoveBoard extends BoardsEvent {
   final String boardId;
+  final String userId;
 
-  const RemoveBoard(this.boardId);
+  const RemoveBoard(this.boardId, this.userId);
 
   @override
-  List<Object?> get props => [boardId];
+  List<Object?> get props => [boardId, userId];
 }
 
 class AddBoard extends BoardsEvent {

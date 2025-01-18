@@ -77,7 +77,7 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
 
   Future<void> _onRemoveBoard(RemoveBoard event, Emitter<BoardsState> emit) async {
     try {
-      await boardsRepository.unassignBoard(event.boardId);
+      await boardsRepository.unassignBoard(event.boardId, event.userId);
 
       await logsRepository.addLogEntry(LogEntry(
         timestamp: DateTime.now(),

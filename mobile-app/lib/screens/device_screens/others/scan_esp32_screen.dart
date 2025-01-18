@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_app/screens/device_screens/others/configure_network_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -15,12 +17,50 @@ class _ScanEsp32ScreenState extends State<ScanEsp32Screen> {
   List<String> espNetworks = [];
   bool isLoading = false;
 
+  String? userId;
+  String? boardId;
+  String? clientId;
+  String? mqttPassword;
+
   @override
   void initState() {
     super.initState();
+    userId = FirebaseAuth.instance.currentUser?.uid;
     requestLocationPermission().then((_) {
       scanForEspNetworks();
     });
+    fetchDataFromFirebase();
+  }
+
+  Future<void> fetchDataFromFirebase() async {
+    if (userId == null) return;
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final boardQuery = await firestore.collection('boards').where('assigned_to', isEqualTo: userId).limit(1).get();
+      if (boardQuery.docs.isNotEmpty) {
+        boardId = boardQuery.docs.first.id;
+        print('Pobrano boardId: $boardId');
+      }
+
+      if (boardId != null) {
+        final snapshot = await firestore
+            .collection('mqtt_clients')
+            .where('boardId', isEqualTo: boardId)
+            .where('userId', isEqualTo: userId)
+            .limit(1)
+            .get();
+        if (snapshot.docs.isNotEmpty) {
+          final data = snapshot.docs.first.data();
+          clientId = data['clientId'] ?? data['userId'];
+          mqttPassword = data['mqtt_password'];
+          print('Pobrano dane MQTT: clientId=$clientId, mqttPassword=$mqttPassword');
+        } else {
+          print('Nie znaleziono danych MQTT dla boardId=$boardId, userId=$userId');
+        }
+      }
+    } catch (e) {
+      print('Błąd podczas pobierania danych z Firebase: $e');
+    }
   }
 
   Future<void> requestLocationPermission() async {
@@ -75,7 +115,7 @@ class _ScanEsp32ScreenState extends State<ScanEsp32Screen> {
     }
   }
 
-  void connectToEspNetwork(String ssid) async {
+  Future<void> connectToEspNetwork(String ssid) async {
     String? password = await showDialog<String>(
       context: context,
       builder: (context) {
@@ -132,7 +172,14 @@ class _ScanEsp32ScreenState extends State<ScanEsp32Screen> {
       await Future.delayed(const Duration(seconds: 5));
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const ConfigureNetworkScreen()),
+        MaterialPageRoute(
+          builder: (context) => ConfigureNetworkScreen(
+            clientId: clientId,
+            mqttPassword: mqttPassword,
+            boardId: boardId,
+            userId: userId,
+          ),
+        ),
       );
     } else {
       print('Nie udało się połączyć z $ssid');

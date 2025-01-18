@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app/models/board.dart';
 
@@ -33,10 +36,8 @@ class BoardsRepository {
     final boardRef = _firestore.collection('boards').doc(boardId);
     final boardDoc = await boardRef.get();
 
-    final mqttClientRef = _firestore
-        .collection('mqtt_clients')
-        .where('boardId', isEqualTo: boardId)
-        .where('clientId', isEqualTo: userId);
+    final mqttClientRef =
+        _firestore.collection('mqtt_clients').where('boardId', isEqualTo: boardId).where('clientId', isEqualTo: userId);
 
     final querySnapshot = await mqttClientRef.get();
 
@@ -68,31 +69,27 @@ class BoardsRepository {
     }
 
     if (querySnapshot.docs.isEmpty) {
-      // If no document matches the query, create a new mqtt_client document
       print("Klient nie istnieje, tworzenie nowego mqtt_clienta");
+      final mqttPassword = generateMqttPassword(16);
       await _firestore.collection('mqtt_clients').add({
         'boardId': boardId,
-        'mqtt_password': '',
+        'mqtt_password': mqttPassword,
         'userId': userId,
       });
     } else {
-      // If a document exists, process it
       final mqttClientDoc = querySnapshot.docs.first;
       final data = mqttClientDoc.data();
       print('MqttClient już istnieje: $data');
 
       if (data != null && data['userId'] != null && data['userId'] != userId) {
-        // Throw an error if the device is already assigned to another user
         throw Exception('Urządzenie jest już przypisane do innego użytkownika.');
       }
 
-      // Update the existing document
       await mqttClientDoc.reference.update({
         'mqtt_password': '',
         'userId': userId,
       });
     }
-
   }
 
   Future<void> updateBoard(String boardId, String newName, String newRoom) async {
@@ -132,25 +129,49 @@ class BoardsRepository {
         'room': null,
       });
 
-      final mqttClientRef = _firestore
-          .collection('mqtt_clients')
-          .where('boardId', isEqualTo: boardId)
-          .where('userId', isEqualTo: userId);
-          print("After query");
-          print(boardId);
-          print(userId);
+      final mqttClientRef =
+          _firestore.collection('mqtt_clients').where('boardId', isEqualTo: boardId).where('userId', isEqualTo: userId);
+      print("After query");
+      print(boardId);
+      print(userId);
 
       final querySnapshot = await mqttClientRef.get();
-      if (querySnapshot.docs.isNotEmpty){
+      if (querySnapshot.docs.isNotEmpty) {
         final mqttClientDoc = querySnapshot.docs.first;
         print("Inside if");
         mqttClientDoc.reference.delete();
       }
 
-
       print('Board $boardId został unassignowany, a wszystkie urządzenia zostały usunięte.');
     } catch (e) {
       throw Exception('Error unassigning board: $e');
     }
+  }
+
+  Future<Map<String, dynamic>?> fetchMqttClient(String boardId, String userId) async {
+    final snapshot = await _firestore
+        .collection('mqtt_clients')
+        .where('boardId', isEqualTo: boardId)
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      return snapshot.docs.first.data();
+    }
+    return null;
+  }
+
+  Future<String?> fetchBoardForUserId(String userId) async {
+    final doc = await _firestore.collection('boards').doc(userId).get();
+    if (!doc.exists) return null;
+
+    return doc.data()?['boardId'] as String?;
+  }
+
+  String generateMqttPassword(int length) {
+    final random = Random.secure();
+    final values = List<int>.generate(length, (i) => random.nextInt(256));
+    return base64Url.encode(values);
   }
 }

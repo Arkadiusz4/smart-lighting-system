@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_bloc.dart';
@@ -5,6 +6,7 @@ import 'package:mobile_app/blocs/boards/board_event.dart';
 import 'package:mobile_app/screens/device_screens/others/qr_code_scanner_screen.dart';
 import 'package:mobile_app/screens/device_screens/others/scan_esp32_screen.dart';
 import 'package:mobile_app/styles/color.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AddBoardScreen extends StatefulWidget {
   const AddBoardScreen({super.key});
@@ -17,6 +19,8 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   final TextEditingController _nameController = TextEditingController();
   String? _selectedRoom;
   String? _scannedBoardId;
+  String? clientId;
+  String? mqttPassword;
 
   final List<String> _rooms = [
     'Salon',
@@ -63,11 +67,44 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
       setState(() {
         _scannedBoardId = mac ?? '';
       });
+
+      if (_scannedBoardId != null && _scannedBoardId!.isNotEmpty) {
+        final userId = FirebaseAuth.instance.currentUser?.uid;
+        if (userId != null) {
+          await fetchMqttData(_scannedBoardId!, userId);
+        }
+      }
+    }
+  }
+
+  Future<void> fetchMqttData(String boardId, String userId) async {
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final snapshot = await firestore
+          .collection('mqtt_clients')
+          .where('boardId', isEqualTo: boardId)
+          .where('userId', isEqualTo: userId)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty) {
+        final data = snapshot.docs.first.data();
+        setState(() {
+          clientId = data['clientId'] ?? data['userId'];
+          mqttPassword = data['mqtt_password'];
+        });
+        print('Pobrano dane MQTT: clientId=$clientId, mqttPassword=$mqttPassword');
+      } else {
+        print('Nie znaleziono danych MQTT dla boardId=$boardId, userId=$userId');
+      }
+    } catch (e) {
+      print('Błąd podczas pobierania danych MQTT: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -154,39 +191,32 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    onPressed: () {
-                      if (_scannedBoardId == null || _scannedBoardId!.isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Najpierw zeskanuj QR Code')),
-                        );
-                        return;
-                      }
-                      final newName = _nameController.text;
-                      final newRoom = _selectedRoom ?? '';
-                      context.read<BoardsBloc>().add(
-                            AddBoard(
-                              boardId: _scannedBoardId!,
-                              name: newName,
-                              room: newRoom,
-                            ),
-                          );
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text(
-                      'Dodaj urządzenie',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                   if (_scannedBoardId != null && _scannedBoardId!.isNotEmpty)
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
+                        final newName = _nameController.text;
+                        final newRoom = _selectedRoom ?? '';
+                        context.read<BoardsBloc>().add(
+                              AddBoard(
+                                boardId: _scannedBoardId!,
+                                name: newName,
+                                room: newRoom,
+                              ),
+                            );
+
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(child: CircularProgressIndicator()),
+                        );
+                        await Future.delayed(const Duration(seconds: 5));
+                        Navigator.of(context).pop();
+
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => const ScanEsp32Screen()),
+                          MaterialPageRoute(
+                            builder: (_) => const ScanEsp32Screen(),
+                          ),
                         );
                       },
                       child: const Text('Skonfiguruj'),

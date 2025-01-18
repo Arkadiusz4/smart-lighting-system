@@ -1,11 +1,23 @@
 import 'dart:io';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:wifi_iot/wifi_iot.dart';
 
 class ConfigureNetworkScreen extends StatefulWidget {
-  const ConfigureNetworkScreen({super.key});
+  final String? clientId;
+  final String? mqttPassword;
+  final String? boardId;
+  final String? userId;
+
+  const ConfigureNetworkScreen({
+    super.key,
+    this.clientId,
+    this.mqttPassword,
+    this.boardId,
+    this.userId,
+  });
 
   @override
   _ConfigureNetworkScreenState createState() => _ConfigureNetworkScreenState();
@@ -29,7 +41,10 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
   }
 
   Future<void> sendNetworkCredentials() async {
+    print('Sprawdzanie dostępności hosta ESP32...');
     bool reachable = await isHostReachable('192.168.4.1');
+    print('Host ESP32 osiągalny: $reachable');
+
     if (!reachable) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('ESP32 niedostępne. Upewnij się, że jesteś połączony z ESP32.')),
@@ -38,11 +53,10 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
     }
 
     final ssid = ssidController.text.trim();
-    final password = passwordController.text.trim();
+    final wifiPassword = passwordController.text.trim();
+    print('SSID: $ssid, WiFi Password: $wifiPassword');
 
-    print('Próba wysłania danych: SSID="$ssid", PASSWORD="$password"');
-
-    if (ssid.isEmpty || password.isEmpty) {
+    if (ssid.isEmpty || wifiPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Proszę podać SSID i hasło')),
       );
@@ -55,12 +69,21 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
 
     try {
       final url = Uri.parse('http://192.168.4.1');
+      final body = jsonEncode({
+        "ssid": ssid,
+        "password": wifiPassword,
+        "clientId": widget.clientId,
+        "mqttPassword": widget.mqttPassword,
+      });
+
+      print('Wysyłanie danych do ESP32: $body');
       final response = await http.post(
         url,
         headers: {'Content-Type': 'application/json'},
-        body: '{"ssid": "$ssid", "password": "$password"}',
+        body: body,
       );
 
+      print('Odpowiedź z ESP32: ${response.statusCode}, body: ${response.body}');
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Dane wysłane do ESP32')),
@@ -74,23 +97,18 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
     } catch (e) {
       String errorMsg = e.toString();
       print('Błąd podczas wysyłania danych: $errorMsg');
-      if (errorMsg.contains('Software caused connection abort')) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Dane wysłane do ESP32')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Wystąpił błąd: $e')),
-        );
-        return;
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Wystąpił błąd: $errorMsg')),
+      );
     } finally {
+      print('Rozłączanie i czyszczenie połączeń Wi-Fi...');
       await WiFiForIoTPlugin.forceWifiUsage(false);
       await WiFiForIoTPlugin.disconnect();
       setState(() {
         isSending = false;
       });
       Navigator.pop(context);
+      print('Zakończono wysyłanie danych i powrót do poprzedniego ekranu.');
     }
   }
 
@@ -117,9 +135,9 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
             isSending
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-                    onPressed: sendNetworkCredentials,
-                    child: const Text('Wyślij dane do ESP32'),
-                  ),
+              onPressed: sendNetworkCredentials,
+              child: const Text('Wyślij dane do ESP32'),
+            ),
           ],
         ),
       ),

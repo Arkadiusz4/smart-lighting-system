@@ -42,8 +42,8 @@ def on_message(client, userdata, msg):
         print(f"Failed to decode message payload: {msg.payload}")
 
 
-BROKER_ADDRESS = "localhost"
-BROKER_PORT = 1883
+BROKER_ADDRESS = "192.168.0.145"
+BROKER_PORT = 2137
 
 mqtt_client = mqtt.Client()
 creds_doc = db.collection("mqtt_clients").document("some_doc_id").get()
@@ -62,12 +62,10 @@ mqtt_client.loop_start()
 
 print("MQTT client started.")
 
-
-
-
 device_listeners = {}
 
 boards_ref = db.collection("boards")
+
 
 def start_boards_listener():
     print("Setting up listener for boards...")
@@ -78,17 +76,8 @@ def start_boards_listener():
     )
     print("Listener for boards is active.")
 
+
 start_boards_listener()
-
-
-
-
-
-
-
-
-
-
 
 try:
     while True:

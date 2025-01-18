@@ -10,6 +10,8 @@ from mosquitto_utils.FirebaseMQTTListener import FirebaseMQTTListener
 from mosquitto_utils.MQTTUserManager import MQTTUserManager
 
 cred = credentials.Certificate("smart-lighting-system-firebase-admin-sdk-credentials.json")
+from firestore_listeners.board_listeners import on_boards_snapshot
+
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 print("Connected to Firebase successfully!")
@@ -59,6 +61,34 @@ mqtt_client.connect(BROKER_ADDRESS, BROKER_PORT, 60)
 mqtt_client.loop_start()
 
 print("MQTT client started.")
+
+
+
+
+device_listeners = {}
+
+boards_ref = db.collection("boards")
+
+def start_boards_listener():
+    print("Setting up listener for boards...")
+    boards_ref.on_snapshot(
+        lambda col_snapshot, changes, read_time: on_boards_snapshot(
+            col_snapshot, changes, read_time, db, device_listeners
+        )
+    )
+    print("Listener for boards is active.")
+
+start_boards_listener()
+
+
+
+
+
+
+
+
+
+
 
 try:
     while True:

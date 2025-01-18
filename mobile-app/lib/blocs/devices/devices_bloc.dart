@@ -109,11 +109,11 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   Future<void> _onToggleLed(ToggleLed event, Emitter<DevicesState> emit) async {
     if (state is DevicesLoaded) {
       try {
-        print("_onToggleLed: "+boardId);
+        print("_onToggleLed: $boardId");
         await devicesRepository.toggleLed(event.deviceId, event.newStatus);
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
-          message: event.newStatus ? 'Włączono LED: ${event.deviceId}' : 'Wyłączono LED: ${event.deviceId} ${boardId}' ,
+          message: event.newStatus ? 'Włączono LED: ${event.deviceId}' : 'Wyłączono LED: ${event.deviceId} $boardId' ,
           device: 'Device',
           boardId: boardId,
           userId: userId,

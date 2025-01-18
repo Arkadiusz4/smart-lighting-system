@@ -19,7 +19,7 @@ class MainNavigationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    Map<String, String> boardRoomMapping = Map();
+    Map<String, String> boardRoomMapping = {};
 
     return Scaffold(
       body: BlocBuilder<NavigationBloc, NavigationState>(

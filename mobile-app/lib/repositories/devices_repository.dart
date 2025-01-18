@@ -12,7 +12,7 @@ class DevicesRepository {
       FirebaseFirestore.instance.collection('boards').doc(boardId).collection('devices');
 
   Future<List<Device>> fetchDevices() async {
-    print("fetching devices: " + boardId);
+    print("fetching devices: $boardId");
     final snapshot = await _devicesCollection.get();
     return snapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
@@ -50,7 +50,7 @@ class DevicesRepository {
   }
 
   Future<void> toggleLed(String deviceId, bool status) async {
-    print("toggleLed "+deviceId+" "+ boardId);
+    print("toggleLed $deviceId $boardId");
     await _devicesCollection.doc(deviceId).update({
       'status': status ? 'on' : 'off',
     });

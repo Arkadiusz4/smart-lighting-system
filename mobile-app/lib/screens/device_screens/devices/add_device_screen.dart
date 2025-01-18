@@ -34,7 +34,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
       appBar: AppBar(
         title: const Text(
           'Dodaj urządzenie',
-          style: const TextStyle(
+          style: TextStyle(
             color: textColor,
             fontSize: 24.0,
             fontWeight: FontWeight.w700,

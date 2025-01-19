@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:mobile_app/screens/device_screens/devices_screen.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 
 class ConfigureNetworkScreen extends StatefulWidget {
@@ -88,6 +89,12 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Dane wysłane do ESP32')),
         );
+
+        // Navigate to the Boards screen after a successful response
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) =>const DevicesScreen()),
+        );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Błąd konfiguracji: ${response.statusCode}')),
@@ -107,8 +114,7 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
       setState(() {
         isSending = false;
       });
-      Navigator.pop(context);
-      print('Zakończono wysyłanie danych i powrót do poprzedniego ekranu.');
+      print('Zakończono wysyłanie danych.');
     }
   }
 

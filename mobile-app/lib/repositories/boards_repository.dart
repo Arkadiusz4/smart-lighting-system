@@ -106,16 +106,10 @@ class BoardsRepository {
   }) async {
     print('Attempting to register peripheral board: $boardId for user: $userId');
 
-
-    if (FirebaseAuth.instance.currentUser == null) {
-      print('User not authenticated!');
-    } else {
-      print('Authenticated user: ${FirebaseAuth.instance.currentUser!.uid}');
-    }
     final boardRef = _firestore.collection('boards').doc(boardId);
-    print("got the board id");
+
     final boardDoc = await boardRef.get();
-    print("got the boardDoc");
+;
 
     if (!boardDoc.exists) {
       print('Board does not exist, creating a new document');

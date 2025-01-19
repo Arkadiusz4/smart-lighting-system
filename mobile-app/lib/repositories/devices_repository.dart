@@ -49,13 +49,22 @@ class DevicesRepository {
   }
 
   Future<void> addDevice(Device device) async {
-    await _devicesCollection.doc(device.deviceId).set({
+    // Prepare the data to be sent
+    Map<String, dynamic> deviceData = {
       'name': device.name,
       'type': device.type,
       'port': device.port,
       'boardId': device.boardId,
       'status': device.status ?? 'off',
-    });
+    };
+
+    // Add extraFields if present
+    if (device.extraFields != null) {
+      deviceData.addAll(device.extraFields!);
+    }
+
+    // Send data to the Firestore collection
+    await _devicesCollection.doc(device.deviceId).set(deviceData);
   }
 
   Future<void> updateDevice(

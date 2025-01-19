@@ -18,6 +18,8 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   final TextEditingController _nameController = TextEditingController();
   String? _selectedPort;
   String? _selectedDevice;
+  TextEditingController _ledOnDurationController = TextEditingController();
+  TextEditingController _pirCooldownTimeController = TextEditingController();
 
   final List<String> _devices = ['LED', 'Sensor ruchu', 'Czujnik dymu', 'Czujnik gazu'];
   final List<String> _ports = [
@@ -37,6 +39,8 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _ledOnDurationController.dispose();
+    _pirCooldownTimeController.dispose();
     super.dispose();
   }
 
@@ -132,6 +136,44 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                 });
               },
             ),
+            if (_selectedDevice == 'Sensor ruchu') ...[
+              const SizedBox(height: 16),
+              TextField(
+                controller: _ledOnDurationController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(
+                  color: textColor,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Led On Duration (s)',
+                  labelStyle: TextStyle(
+                    color: textColor,
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: _pirCooldownTimeController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(
+                  color: textColor,
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w600,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'PIR Cooldown Time (s)',
+                  labelStyle: TextStyle(
+                    color: textColor,
+                    fontSize: 15.0,
+                    fontWeight: FontWeight.w300,
+                  ),
+                ),
+              ),
+            ],
             const SizedBox(height: 50.0),
             ElevatedButton(
               onPressed: () {
@@ -142,12 +184,22 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                 final devicesBloc = context.read<DevicesBloc>();
 
                 final deviceId = DateTime.now().millisecondsSinceEpoch.toString();
+
+                // Construct extraFields for "Sensor ruchu"
+                final extraFields = _selectedDevice == 'Sensor ruchu'
+                    ? {
+                  'led_on_duration': _ledOnDurationController.text,
+                  'pir_cooldown_time': _pirCooldownTimeController.text,
+                }
+                    : null;
+
                 final device = Device(
                   deviceId: deviceId,
                   name: name,
                   type: type,
                   port: port,
                   boardId: widget.boardId,
+                  extraFields: extraFields, // Pass extraFields
                 );
                 devicesBloc.add(AddDevice(device));
                 Navigator.of(context).pop();

@@ -39,8 +39,12 @@ class LogIconHelper {
         return Icons.lightbulb_outline;
       }
     }
-    if (log.device == 'Motion Sensor') {
-      return Icons.directions_run;
+    if (log.device == 'Device') {
+      if (log.eventType == 'motion_sensor_on') {
+        return Icons.directions_run;
+      } else if (log.eventType == 'motion_sensor_off') {
+        return Icons.sensors_off;
+      }
     }
     return Icons.device_unknown;
   }
@@ -68,15 +72,19 @@ class LogIconHelper {
         return Colors.green;
       }
     }
-    if (log.device == 'LED') {
-      if (log.status == 'on') {
+    if (log.device == 'Device') {
+      if (log.eventType == 'led_on') {
         return Colors.yellow;
-      } else if (log.status == 'off') {
+      } else if (log.eventType == 'led_off') {
         return primaryColor;
       }
     }
-    if (log.device == 'Motion Sensor') {
-      return Colors.yellow;
+    if (log.device == 'Device') {
+      if (log.eventType == 'motion_sensor_on') {
+        return Colors.green;
+      } else if (log.eventType == 'motion_sensor_off') {
+        return Colors.red;
+      }
     }
     return primaryColor;
   }

@@ -4,12 +4,11 @@ import 'package:mobile_app/blocs/devices/devices_bloc.dart';
 import 'package:mobile_app/blocs/devices/devices_event.dart';
 import 'package:mobile_app/blocs/devices/devices_state.dart';
 import 'package:mobile_app/models/device.dart';
+import 'package:mobile_app/models/motion_sensor.dart';
 import 'package:mobile_app/repositories/devices_repository.dart';
 import 'package:mobile_app/repositories/logs_repository.dart';
 import 'package:mobile_app/styles/color.dart';
 import 'package:mobile_app/screens/home_screen/led_switch.dart';
-
-import '../../models/motion_sensor.dart';
 import 'motion_sensor.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -154,9 +153,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ],
                                 );
                               } else if (device.type.toLowerCase() == 'sensor ruchu') {
-                                // Extract extra fields from the device object (cast if needed)
-                                final int ledOnDuration = int.tryParse(device.extraFields?['led_on_duration']?.toString() ?? '') ?? 1000; // Default to 1000 if parsing fails
-                                final int pirCooldownTime = int.tryParse(device.extraFields?['pir_cooldown_time']?.toString() ?? '') ?? 5000; // Default to 5000 if parsing fails
+                                final int ledOnDuration =
+                                    int.tryParse(device.extraFields?['led_on_duration']?.toString() ?? '') ?? 1000;
+                                final int pirCooldownTime =
+                                    int.tryParse(device.extraFields?['pir_cooldown_time']?.toString() ?? '') ?? 5000;
 
                                 final motionSensor = MotionSensor.fromDevice(
                                   device,
@@ -184,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   ),
                                   children: [
                                     MotionSensorWidget(
-                                      motionSensor: motionSensor, // Pass converted MotionSensor
+                                      motionSensor: motionSensor,
                                       userId: widget.userId,
                                       devicesBloc: bloc,
                                     ),
@@ -235,7 +235,7 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (type.toLowerCase()) {
       case 'led':
         return Icons.lightbulb;
-      case 'sensor':
+      case 'sensor ruchu':
         return Icons.directions_run_outlined;
       default:
         return Icons.device_unknown;

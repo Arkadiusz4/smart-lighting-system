@@ -33,6 +33,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
     'GPIO8',
     'GPIO9',
     'GPIO10',
+    'GPIO16',
     'UART0',
   ];
 

@@ -152,13 +152,13 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
         await devicesRepository.toggleMotionSensor(event.deviceId, event.newStatus);
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
-          message: event.newStatus ? 'Włączono LED: ${event.deviceId}' : 'Wyłączono LED: ${event.deviceId} $boardId' ,
+          message: event.newStatus ? 'Włączono sensor ruchu: ${event.deviceId}' : 'Wyłączono sensor ruchu: ${event.deviceId} $boardId' ,
           device: 'Device',
           boardId: boardId,
           userId: userId,
           severity: 'info',
           status: event.newStatus ? 'on' : 'off',
-          eventType: event.newStatus ? 'led_on' : 'led_off',
+          eventType: event.newStatus ? 'motion_sensor_on' : 'motion_sensor_off',
         ));
         final devices = await devicesRepository.fetchDevices();
         emit(DevicesLoaded(devices));

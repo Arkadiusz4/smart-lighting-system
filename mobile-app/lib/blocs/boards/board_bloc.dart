@@ -4,6 +4,7 @@ import 'package:mobile_app/blocs/boards/board_state.dart';
 import 'package:mobile_app/models/log_entry.dart';
 import 'package:mobile_app/repositories/boards_repository.dart';
 import 'package:mobile_app/repositories/logs_repository.dart';
+import 'package:mobile_app/screens/device_screens/boards/peripheral_configuration_screen.dart';
 
 class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
   final BoardsRepository boardsRepository;
@@ -19,6 +20,7 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
     on<EditBoard>(_onEditBoard);
     on<RemoveBoard>(_onRemoveBoard);
     on<AddBoard>(_onAddBoard);
+    on<AddPeripheralBoard>(_onAddPeripheralBoard);
   }
 
   Future<void> _onLoadBoards(LoadBoards event, Emitter<BoardsState> emit) async {
@@ -110,6 +112,41 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
         boardId: event.boardId,
         name: event.name,
         room: event.room,
+        peripheral: event.peripheral,
+      );
+
+      await logsRepository.addLogEntry(LogEntry(
+        timestamp: DateTime.now(),
+        message: 'Dodano board: ${event.name}',
+        device: 'Board',
+        boardId: event.boardId,
+        userId: userId,
+        severity: 'info',
+        status: null,
+        wifiStatus: null,
+        eventType: 'add_board',
+      ));
+
+      final boards = await boardsRepository.fetchBoards(userId);
+      final defaultBoardId = boards.isNotEmpty ? boards.first.boardId : null;
+
+      emit(BoardsLoaded(
+        boards: boards,
+        currentBoardId: defaultBoardId,
+      ));
+    } catch (e) {
+      emit(BoardsError(e.toString()));
+    }
+  }
+
+  Future<void> _onAddPeripheralBoard(AddPeripheralBoard event, Emitter<BoardsState> emit) async {
+    try {
+      await boardsRepository.registerPeripheralBoard(
+        userId: userId,
+        boardId: event.boardId,
+        name: event.name,
+        room: event.room,
+        peripheral: event.peripheral,
       );
 
       await logsRepository.addLogEntry(LogEntry(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
+import 'package:mobile_app/screens/device_screens/boards/peripheral_configuration_screen.dart';
 import 'package:mobile_app/screens/device_screens/others/qr_code_scanner_screen.dart';
 import 'package:mobile_app/screens/device_screens/others/scan_esp32_screen.dart';
 import 'package:mobile_app/styles/color.dart';
@@ -77,6 +78,22 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
     }
   }
 
+  Future<void> _addPeripheral() async {
+      final boardsBloc = context.read<BoardsBloc>();
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) {
+            return BlocProvider.value(
+              value: boardsBloc,
+              child: const AddPeripheralBoardScreen(),
+            );
+          },
+        ),
+      );
+
+  }
+
   Future<void> fetchMqttData(String boardId, String userId) async {
     try {
       final firestore = FirebaseFirestore.instance;
@@ -108,7 +125,7 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Dodaj urządzenie',
+          'Dodaj boarda',
           style: TextStyle(
             color: textColor,
             fontSize: 24.0,
@@ -178,6 +195,18 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                 ),
               ),
             ),
+
+            ElevatedButton.icon(
+              onPressed: _addPeripheral,
+           //   icon: const Icon(Icons.qr_code_scanner),
+              label: const Text(
+                'Dodaj urządzenie peripheral',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
             const SizedBox(height: 20.0),
             Text(
               _scannedBoardId != null && _scannedBoardId!.isNotEmpty
@@ -201,6 +230,7 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                                 boardId: _scannedBoardId!,
                                 name: newName,
                                 room: newRoom,
+                                peripheral: false,
                               ),
                             );
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:mobile_app/models/board.dart';
 
 class BoardsRepository {
@@ -18,6 +19,7 @@ class BoardsRepository {
           boardId: doc.id,
           name: data['name'] ?? '',
           room: data['room'] ?? '',
+          peripheral: data['peripheral'] ?? false,
         );
       }).toList();
     } catch (e) {
@@ -31,6 +33,7 @@ class BoardsRepository {
     required String boardId,
     required String name,
     required String room,
+    required bool peripheral,
   }) async {
     print('Próba rejestracji boarda: $boardId dla użytkownika: $userId');
     final boardRef = _firestore.collection('boards').doc(boardId);
@@ -51,6 +54,7 @@ class BoardsRepository {
         'assigned_to': userId,
         'name': name,
         'room': room,
+        'peripheral': peripheral,
       });
     } else {
       final data = boardDoc.data();
@@ -65,6 +69,7 @@ class BoardsRepository {
         'assigned_to': userId,
         'name': name,
         'room': room,
+
       });
     }
 
@@ -88,6 +93,55 @@ class BoardsRepository {
       await mqttClientDoc.reference.update({
         'mqtt_password': '',
         'userId': userId,
+      });
+    }
+  }
+
+  Future<void> registerPeripheralBoard({
+    required String userId,
+    required String boardId,
+    required String name,
+    required String room,
+    required bool peripheral,
+  }) async {
+    print('Attempting to register peripheral board: $boardId for user: $userId');
+
+
+    if (FirebaseAuth.instance.currentUser == null) {
+      print('User not authenticated!');
+    } else {
+      print('Authenticated user: ${FirebaseAuth.instance.currentUser!.uid}');
+    }
+    final boardRef = _firestore.collection('boards').doc(boardId);
+    print("got the board id");
+    final boardDoc = await boardRef.get();
+    print("got the boardDoc");
+
+    if (!boardDoc.exists) {
+      print('Board does not exist, creating a new document');
+      await boardRef.set({
+        'mac_address': boardId,
+        'encryption_key': '',
+        'status': 'assigned',
+        'registered_at': FieldValue.serverTimestamp(),
+        'assigned_to': userId,
+        'name': name,
+        'room': room,
+        'peripheral': peripheral,
+      });
+    } else {
+      final data = boardDoc.data();
+      print('Board already exists: $data');
+      if (data != null && data['assigned_to'] != null) {
+        throw Exception('The device is already assigned to another user.');
+      }
+      print('Updating existing board');
+      await boardRef.update({
+        'status': 'assigned',
+        'registered_at': FieldValue.serverTimestamp(),
+        'assigned_to': userId,
+        'name': name,
+        'room': room,
       });
     }
   }

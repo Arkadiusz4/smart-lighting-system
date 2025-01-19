@@ -39,15 +39,34 @@ class AddBoard extends BoardsEvent {
   final String boardId;
   final String name;
   final String room;
+  final bool peripheral;
 
   const AddBoard({
     required this.boardId,
     required this.name,
     required this.room,
+    required this.peripheral,
   });
 
   @override
-  List<Object?> get props => [boardId, name, room];
+  List<Object?> get props => [boardId, name, room, peripheral];
+}
+
+class AddPeripheralBoard extends BoardsEvent {
+  final String boardId;
+  final String name;
+  final String room;
+  final bool peripheral;
+
+  const AddPeripheralBoard({
+    required this.boardId,
+    required this.name,
+    required this.room,
+    required this.peripheral,
+  });
+
+  @override
+  List<Object?> get props => [boardId, name, room, peripheral];
 }
 
 class SelectBoard extends BoardsEvent {

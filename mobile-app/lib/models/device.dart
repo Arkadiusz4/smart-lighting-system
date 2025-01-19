@@ -5,6 +5,7 @@ class Device {
   final String port;
   final String boardId;
   final String? status;
+  final Map<String, dynamic>? extraFields; // Add this for extra fields
 
   Device({
     required this.deviceId,
@@ -13,6 +14,7 @@ class Device {
     required this.port,
     required this.boardId,
     this.status,
+    this.extraFields, // Include in the constructor
   });
 
   Device copyWith({
@@ -22,6 +24,7 @@ class Device {
     String? port,
     String? boardId,
     String? status,
+    Map<String, dynamic>? extraFields, // Add to copyWith
   }) {
     return Device(
       deviceId: deviceId ?? this.deviceId,
@@ -30,6 +33,7 @@ class Device {
       port: port ?? this.port,
       boardId: boardId ?? this.boardId,
       status: status ?? this.status,
+      extraFields: extraFields ?? this.extraFields, // Copy extra fields
     );
   }
 }

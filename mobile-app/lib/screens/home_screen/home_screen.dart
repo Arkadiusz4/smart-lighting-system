@@ -9,6 +9,9 @@ import 'package:mobile_app/repositories/logs_repository.dart';
 import 'package:mobile_app/styles/color.dart';
 import 'package:mobile_app/screens/home_screen/led_switch.dart';
 
+import '../../models/motion_sensor.dart';
+import 'motion_sensor.dart';
+
 class HomeScreen extends StatefulWidget {
   final String userId;
   final Map<String, String> boardRoomMapping;
@@ -144,6 +147,43 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     LedSwitch(
                                       device: device,
+                                      userId: widget.userId,
+                                      devicesBloc: bloc,
+                                    ),
+                                  ],
+                                );
+                              } else if (device.type.toLowerCase() == 'motion sensor') {
+                                // Extract extra fields from the device object (cast if needed)
+                                final int ledOnDuration = device.extraFields?['led_on_duration'] ?? 1000; // Default to 1000 if not present
+                                final int pirCooldownTime = device.extraFields?['pir_cooldown_time'] ?? 5000; // Default to 5000 if not present
+
+                                final motionSensor = MotionSensor.fromDevice(
+                                  device,
+                                  ledOnDuration: ledOnDuration,
+                                  pirCooldownTime: pirCooldownTime,
+                                );
+
+                                return ExpansionTile(
+                                  leading: Icon(getDeviceIcon(device.type), color: primaryColor),
+                                  title: Text(
+                                    device.name,
+                                    style: const TextStyle(
+                                      color: textColor,
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'Port: ${device.port}, status: ${device.status ?? 'off'}',
+                                    style: const TextStyle(
+                                      color: textColor,
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  children: [
+                                    MotionSensorWidget(
+                                      motionSensor: motionSensor, // Pass converted MotionSensor
                                       userId: widget.userId,
                                       devicesBloc: bloc,
                                     ),

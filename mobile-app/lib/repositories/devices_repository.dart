@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:mobile_app/models/device.dart';
 
+import '../models/motion_sensor.dart';
+
 class DevicesRepository {
   final String boardId;
 
@@ -12,10 +14,25 @@ class DevicesRepository {
       FirebaseFirestore.instance.collection('boards').doc(boardId).collection('devices');
 
   Future<List<Device>> fetchDevices() async {
-    print("fetching devices: $boardId");
     final snapshot = await _devicesCollection.get();
     return snapshot.docs.map((doc) {
       final data = doc.data() as Map<String, dynamic>;
+
+      // Check if the device is a MotionSensor
+      if (data['type'] == 'motion_sensor') {
+        return MotionSensor(
+          deviceId: doc.id,
+          name: data['name'] ?? '',
+          type: data['type'] ?? '',
+          port: data['port'] ?? '',
+          boardId: boardId,
+          status: data['status'],
+          ledOnDuration: data['led_on_duration'] ?? 0,
+          pirCooldownTime: data['pir_cooldown_time'] ?? 0,
+        );
+      }
+
+      // Generic device with extra fields
       return Device(
         deviceId: doc.id,
         name: data['name'] ?? '',
@@ -23,6 +40,10 @@ class DevicesRepository {
         port: data['port'] ?? '',
         boardId: boardId,
         status: data['status'],
+        extraFields: {
+          'led_on_duration': data['led_on_duration'] ?? 0,
+          'pir_cooldown_time': data['pir_cooldown_time'] ?? 0,
+        }, // Assign extra fields here
       );
     }).toList();
   }
@@ -51,6 +72,13 @@ class DevicesRepository {
 
   Future<void> toggleLed(String deviceId, bool status) async {
     print("toggleLed $deviceId $boardId");
+    await _devicesCollection.doc(deviceId).update({
+      'status': status ? 'on' : 'off',
+    });
+  }
+
+  Future<void> toggleMotionSensor(String deviceId, bool status) async {
+    print("toggleMotionSense $deviceId $boardId");
     await _devicesCollection.doc(deviceId).update({
       'status': status ? 'on' : 'off',
     });

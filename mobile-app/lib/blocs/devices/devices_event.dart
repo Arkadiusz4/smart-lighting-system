@@ -54,3 +54,13 @@ class ToggleLed extends DevicesEvent {
   @override
   List<Object?> get props => [deviceId, newStatus];
 }
+
+class ToggleMotionSensor extends DevicesEvent {
+  final String deviceId;
+  final bool newStatus;
+
+  const ToggleMotionSensor(this.deviceId, this.newStatus);
+
+  @override
+  List<Object?> get props => [deviceId, newStatus];
+}

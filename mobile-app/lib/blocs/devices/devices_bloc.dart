@@ -4,6 +4,7 @@ import 'package:mobile_app/blocs/devices/devices_state.dart';
 import 'package:mobile_app/models/log_entry.dart';
 import 'package:mobile_app/repositories/devices_repository.dart';
 import 'package:mobile_app/repositories/logs_repository.dart';
+import 'package:mobile_app/screens/home_screen/motion_sensor.dart';
 
 class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   final DevicesRepository devicesRepository;
@@ -22,6 +23,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     on<UpdateDevice>(_onUpdateDevice);
     on<RemoveDevice>(_onRemoveDevice);
     on<ToggleLed>(_onToggleLed);
+    on<ToggleMotionSensor>(_onToggleMotionSensor);
   }
 
   Future<void> _onLoadDevices(LoadDevices event, Emitter<DevicesState> emit) async {
@@ -129,4 +131,29 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
       }
     }
   }
+
+  Future<void> _onToggleMotionSensor(ToggleMotionSensor event, Emitter<DevicesState> emit) async {
+    if (state is DevicesLoaded) {
+      try {
+        print("_onToggleMotionSensor: $boardId");
+        await devicesRepository.toggleMotionSensor(event.deviceId, event.newStatus);
+        await logsRepository.addLogEntry(LogEntry(
+          timestamp: DateTime.now(),
+          message: event.newStatus ? 'Włączono LED: ${event.deviceId}' : 'Wyłączono LED: ${event.deviceId} $boardId' ,
+          device: 'Device',
+          boardId: boardId,
+          userId: userId,
+          severity: 'info',
+          status: event.newStatus ? 'on' : 'off',
+          eventType: event.newStatus ? 'led_on' : 'led_off',
+        ));
+        final devices = await devicesRepository.fetchDevices();
+        emit(DevicesLoaded(devices));
+      } catch (e) {
+        print('Error in _onToggleLed: $e');
+        emit(DevicesError(e.toString()));
+      }
+    }
+  }
+
 }

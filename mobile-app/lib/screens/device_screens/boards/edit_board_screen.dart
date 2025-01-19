@@ -4,6 +4,7 @@ import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
 import 'package:mobile_app/models/board.dart';
 import 'package:mobile_app/styles/color.dart';
+import 'edit_wifi_screen.dart'; // Import the EditWifiScreen
 
 class EditBoardScreen extends StatefulWidget {
   final Board board;
@@ -16,7 +17,6 @@ class EditBoardScreen extends StatefulWidget {
 
 class _EditBoardScreenState extends State<EditBoardScreen> {
   late TextEditingController _nameController;
-
   String? _selectedRoom;
 
   final List<String> _rooms = [
@@ -111,16 +111,35 @@ class _EditBoardScreenState extends State<EditBoardScreen> {
                 final newName = _nameController.text;
                 final newRoom = _selectedRoom ?? '';
                 context.read<BoardsBloc>().add(
-                      EditBoard(
-                        boardId: widget.board.boardId,
-                        newName: newName,
-                        newRoom: newRoom,
-                      ),
-                    );
+                  EditBoard(
+                    boardId: widget.board.boardId,
+                    newName: newName,
+                    newRoom: newRoom,
+                  ),
+                );
                 Navigator.of(context).pop();
               },
               child: const Text(
                 'Zapisz zmiany',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                // Navigate to the EditWifiScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ScanEsp32ScreenEditWifi(), // Pass the board to EditWifiScreen
+                  ),
+                );
+              },
+              child: const Text(
+                'Edytuj WiFi',
                 style: TextStyle(
                   fontSize: 16.0,
                   fontWeight: FontWeight.w600,

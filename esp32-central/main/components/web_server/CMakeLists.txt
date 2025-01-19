@@ -1,5 +1,5 @@
 idf_component_register(SRCS "web_server.c"
         INCLUDE_DIRS "include"
-        REQUIRES esp_http_server oled_display mqtt_manager
+        REQUIRES esp_http_server oled_display mqtt_manager mqtt_broker
         PRIV_REQUIRES wifi_manager
 )

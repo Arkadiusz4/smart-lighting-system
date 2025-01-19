@@ -1,5 +1,4 @@
 import time
-
 import firebase_admin
 from firebase_admin import credentials, firestore
 import paho.mqtt.client as mqtt
@@ -10,8 +9,6 @@ from mosquitto_utils.FirebaseMQTTListener import FirebaseMQTTListener
 from mosquitto_utils.MQTTUserManager import MQTTUserManager
 
 cred = credentials.Certificate("smart-lighting-system-firebase-admin-sdk-credentials.json")
-from firestore_listeners.board_listeners import on_boards_snapshot
-
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 print("Connected to Firebase successfully!")
@@ -53,7 +50,6 @@ if creds_doc.exists:
     password = creds_data.get("mqtt_password")
     if username and password:
         mqtt_client.username_pw_set(username=username, password=password)
-
 mqtt_client.on_connect = on_connect
 mqtt_client.on_message = on_message
 
@@ -63,8 +59,9 @@ mqtt_client.loop_start()
 print("MQTT client started.")
 
 device_listeners = {}
-
 boards_ref = db.collection("boards")
+
+from firestore_listeners.board_listeners import on_boards_snapshot
 
 
 def start_boards_listener():

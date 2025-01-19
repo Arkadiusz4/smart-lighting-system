@@ -79,7 +79,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
         // Add a log entry
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
-          message: 'Zedytowano urządzenie: ${event.deviceId} z dodatkowymi polami ${event.extraFields}',
+          message: 'Zedytowano urządzenie: ${event.newName} z dodatkowymi polami ${event.extraFields}',
           device: 'Device',
           boardId: boardId,
           userId: userId,
@@ -104,7 +104,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
 
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
-          message: 'Usunięto urządzenie: ${event.deviceId}',
+          message: 'Usunięto urządzenie: ${event.deviceName}',
           device: 'Device',
           boardId: boardId,
           userId: userId,
@@ -128,7 +128,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
         await devicesRepository.toggleLed(event.deviceId, event.newStatus);
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
-          message: event.newStatus ? 'Włączono LED: ${event.deviceId}' : 'Wyłączono LED: ${event.deviceId} $boardId' ,
+          message: event.newStatus ? 'Włączono LED: ${event.deviceName}' : 'Wyłączono LED: ${event.deviceName} ' ,
           device: 'Device',
           boardId: boardId,
           userId: userId,
@@ -148,11 +148,15 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   Future<void> _onToggleMotionSensor(ToggleMotionSensor event, Emitter<DevicesState> emit) async {
     if (state is DevicesLoaded) {
       try {
-        print("_onToggleMotionSensor: $boardId");
+
         await devicesRepository.toggleMotionSensor(event.deviceId, event.newStatus);
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
+<<<<<<< Updated upstream
           message: event.newStatus ? 'Włączono sensor ruchu: ${event.deviceId}' : 'Wyłączono sensor ruchu: ${event.deviceId} $boardId' ,
+=======
+          message: event.newStatus ? 'Włączono sensor ruchu: ${event.deviceName}' : 'Wyłączono sensor ruchu: ${event.deviceName} ' ,
+>>>>>>> Stashed changes
           device: 'Device',
           boardId: boardId,
           userId: userId,

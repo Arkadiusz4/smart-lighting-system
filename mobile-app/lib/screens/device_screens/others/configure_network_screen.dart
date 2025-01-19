@@ -75,6 +75,7 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
         "password": wifiPassword,
         "clientId": widget.clientId,
         "mqttPassword": widget.mqttPassword,
+        "boardId": widget.boardId,
       });
 
       print('Wysyłanie danych do ESP32: $body');
@@ -90,10 +91,9 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
           const SnackBar(content: Text('Dane wysłane do ESP32')),
         );
 
-        // Navigate to the Boards screen after a successful response
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) =>const DevicesScreen()),
+          MaterialPageRoute(builder: (context) => const DevicesScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -141,9 +141,9 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
             isSending
                 ? const CircularProgressIndicator()
                 : ElevatedButton(
-              onPressed: sendNetworkCredentials,
-              child: const Text('Wyślij dane do ESP32'),
-            ),
+                    onPressed: sendNetworkCredentials,
+                    child: const Text('Wyślij dane do ESP32'),
+                  ),
           ],
         ),
       ),

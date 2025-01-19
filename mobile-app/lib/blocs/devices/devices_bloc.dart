@@ -152,11 +152,8 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
         await devicesRepository.toggleMotionSensor(event.deviceId, event.newStatus);
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
-<<<<<<< Updated upstream
-          message: event.newStatus ? 'Włączono sensor ruchu: ${event.deviceId}' : 'Wyłączono sensor ruchu: ${event.deviceId} $boardId' ,
-=======
+
           message: event.newStatus ? 'Włączono sensor ruchu: ${event.deviceName}' : 'Wyłączono sensor ruchu: ${event.deviceName} ' ,
->>>>>>> Stashed changes
           device: 'Device',
           boardId: boardId,
           userId: userId,

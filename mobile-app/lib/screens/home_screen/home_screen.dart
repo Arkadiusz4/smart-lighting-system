@@ -125,6 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           }
                           return Column(
                             children: state.devices.map((Device device) {
+                              print(device.type);
                               if (device.type.toLowerCase() == 'led') {
                                 return ExpansionTile(
                                   leading: Icon(getDeviceIcon(device.type), color: primaryColor),
@@ -152,10 +153,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ],
                                 );
-                              } else if (device.type.toLowerCase() == 'Sensor ruchu') {
+                              } else if (device.type.toLowerCase() == 'sensor ruchu') {
                                 // Extract extra fields from the device object (cast if needed)
-                                final int ledOnDuration = device.extraFields?['led_on_duration'] ?? 1000; // Default to 1000 if not present
-                                final int pirCooldownTime = device.extraFields?['pir_cooldown_time'] ?? 5000; // Default to 5000 if not present
+                                final int ledOnDuration = int.tryParse(device.extraFields?['led_on_duration']?.toString() ?? '') ?? 1000; // Default to 1000 if parsing fails
+                                final int pirCooldownTime = int.tryParse(device.extraFields?['pir_cooldown_time']?.toString() ?? '') ?? 5000; // Default to 5000 if parsing fails
 
                                 final motionSensor = MotionSensor.fromDevice(
                                   device,

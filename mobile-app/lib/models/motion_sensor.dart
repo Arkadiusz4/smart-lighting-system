@@ -16,7 +16,8 @@ required this.pirCooldownTime,
 });
 
 factory MotionSensor.fromDevice(Device device, {required int ledOnDuration, required int pirCooldownTime}) {
-return MotionSensor(
+
+  return MotionSensor(
 deviceId: device.deviceId,
 name: device.name,
 type: device.type,

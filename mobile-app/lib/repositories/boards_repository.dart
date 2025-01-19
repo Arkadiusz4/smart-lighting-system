@@ -81,7 +81,7 @@ class BoardsRepository {
       final data = mqttClientDoc.data();
       print('MqttClient już istnieje: $data');
 
-      if (data != null && data['userId'] != null && data['userId'] != userId) {
+      if (data['userId'] != null && data['userId'] != userId) {
         throw Exception('Urządzenie jest już przypisane do innego użytkownika.');
       }
 

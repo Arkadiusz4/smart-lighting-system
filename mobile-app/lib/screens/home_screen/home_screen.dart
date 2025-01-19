@@ -152,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ],
                                 );
-                              } else if (device.type.toLowerCase() == 'motion sensor') {
+                              } else if (device.type.toLowerCase() == 'Sensor ruchu') {
                                 // Extract extra fields from the device object (cast if needed)
                                 final int ledOnDuration = device.extraFields?['led_on_duration'] ?? 1000; // Default to 1000 if not present
                                 final int pirCooldownTime = device.extraFields?['pir_cooldown_time'] ?? 5000; // Default to 5000 if not present

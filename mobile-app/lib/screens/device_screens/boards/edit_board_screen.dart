@@ -108,19 +108,16 @@ class _EditBoardScreenState extends State<EditBoardScreen> {
             const SizedBox(height: 50.0),
             ElevatedButton(
               onPressed: () {
-                final newName = _nameController.text;
-                final newRoom = _selectedRoom ?? '';
-                context.read<BoardsBloc>().add(
-                  EditBoard(
-                    boardId: widget.board.boardId,
-                    newName: newName,
-                    newRoom: newRoom,
+                // Navigate to the EditWifiScreen
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ScanEsp32ScreenEditWifi(), // Pass the board to EditWifiScreen
                   ),
                 );
-                Navigator.of(context).pop();
               },
               child: const Text(
-                'Zapisz zmiany',
+                'Edytuj WiFi',
                 style: TextStyle(
                   fontSize: 16.0,
                   fontWeight: FontWeight.w600,
@@ -130,16 +127,19 @@ class _EditBoardScreenState extends State<EditBoardScreen> {
             const SizedBox(height: 16.0),
             ElevatedButton(
               onPressed: () {
-                // Navigate to the EditWifiScreen
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => ScanEsp32ScreenEditWifi(), // Pass the board to EditWifiScreen
-                  ),
-                );
+                final newName = _nameController.text;
+                final newRoom = _selectedRoom ?? '';
+                context.read<BoardsBloc>().add(
+                      EditBoard(
+                        boardId: widget.board.boardId,
+                        newName: newName,
+                        newRoom: newRoom,
+                      ),
+                    );
+                Navigator.of(context).pop();
               },
               child: const Text(
-                'Edytuj WiFi',
+                'Zapisz zmiany',
                 style: TextStyle(
                   fontSize: 16.0,
                   fontWeight: FontWeight.w600,

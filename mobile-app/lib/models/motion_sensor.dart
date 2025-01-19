@@ -5,22 +5,15 @@ final int ledOnDuration;
 final int pirCooldownTime;
 
 MotionSensor({
-required String deviceId,
-required String name,
-required String type,
-required String port,
-required String boardId,
-String? status,
+required super.deviceId,
+required super.name,
+required super.type,
+required super.port,
+required super.boardId,
+super.status,
 required this.ledOnDuration,
 required this.pirCooldownTime,
-}) : super(
-deviceId: deviceId,
-name: name,
-type: type,
-port: port,
-boardId: boardId,
-status: status,
-);
+});
 
 factory MotionSensor.fromDevice(Device device, {required int ledOnDuration, required int pirCooldownTime}) {
 return MotionSensor(

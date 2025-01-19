@@ -20,7 +20,19 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   String? _selectedDevice;
 
   final List<String> _devices = ['LED', 'Sensor ruchu', 'Czujnik dymu', 'Czujnik gazu'];
-  final List<String> _ports = ['GPIO1', 'GPIO2', 'GPIO3', 'UART0'];
+  final List<String> _ports = [
+    'GPIO1',
+    'GPIO2',
+    'GPIO3',
+    'GPIO4',
+    'GPIO5',
+    'GPIO6',
+    'GPIO7',
+    'GPIO8',
+    'GPIO9',
+    'GPIO10',
+    'UART0',
+  ];
 
   @override
   void dispose() {

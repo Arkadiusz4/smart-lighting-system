@@ -4,7 +4,6 @@ import 'package:mobile_app/blocs/devices/devices_state.dart';
 import 'package:mobile_app/models/log_entry.dart';
 import 'package:mobile_app/repositories/devices_repository.dart';
 import 'package:mobile_app/repositories/logs_repository.dart';
-import 'package:mobile_app/screens/home_screen/motion_sensor.dart';
 
 class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   final DevicesRepository devicesRepository;

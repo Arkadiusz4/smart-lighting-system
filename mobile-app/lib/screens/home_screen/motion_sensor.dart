@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_app/blocs/devices/devices_bloc.dart';
 import 'package:mobile_app/blocs/devices/devices_event.dart';
-import 'package:mobile_app/models/device.dart';
 import 'package:mobile_app/styles/color.dart';
 
 import '../../models/motion_sensor.dart';

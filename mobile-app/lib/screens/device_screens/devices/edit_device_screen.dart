@@ -27,7 +27,7 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
     _portController = TextEditingController(text: widget.device.port);
 
     // Initialize controllers for motion sensor specific fields if applicable
-    if (widget.device.type.toLowerCase() == 'motion sensor') {
+    if (widget.device.type.toLowerCase() == 'sensor ruchu') {
       _ledOnDurationController = TextEditingController(
         text: (widget.device.extraFields?['led_on_duration'] ?? '').toString(),
       );
@@ -72,7 +72,7 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
               controller: _portController,
               decoration: const InputDecoration(labelText: 'Port'),
             ),
-            if (widget.device.type.toLowerCase() == 'motion sensor') ...[
+            if (widget.device.type.toLowerCase() == 'sensor ruchu') ...[
               const SizedBox(height: 20),
               TextField(
                 controller: _ledOnDurationController,

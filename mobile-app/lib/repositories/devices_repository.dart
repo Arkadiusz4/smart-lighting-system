@@ -58,14 +58,28 @@ class DevicesRepository {
     });
   }
 
-  Future<void> updateDevice(String deviceId, String newName, String newType, String newPort) async {
-    await _devicesCollection.doc(deviceId).update({
+  Future<void> updateDevice(
+      String deviceId,
+      String newName,
+      String newType,
+      String newPort, {
+        Map<String, String>? extraFields, // Optional extraFields parameter
+      }) async {
+    // Prepare the update data
+    final updateData = {
       'name': newName,
       'type': newType,
       'port': newPort,
-    });
-  }
+    };
 
+    // If extraFields are provided, merge them with the update data
+    if (extraFields != null) {
+      updateData.addAll(extraFields); // Merge extraFields into the update data
+    }
+
+    // Perform the update
+    await _devicesCollection.doc(deviceId).update(updateData);
+  }
   Future<void> removeDevice(String deviceId) async {
     await _devicesCollection.doc(deviceId).delete();
   }

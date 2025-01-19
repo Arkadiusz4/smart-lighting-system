@@ -31,16 +31,11 @@ class _MotionSensorWidgetState extends State<MotionSensorWidget> {
   void initState() {
     super.initState();
     currentValue = widget.motionSensor.status == 'on';
-    ledDurationController =
-        TextEditingController(text: widget.motionSensor.ledOnDuration.toString());
-    pirCooldownController =
-        TextEditingController(text: widget.motionSensor.pirCooldownTime.toString());
   }
 
   @override
   void dispose() {
-    ledDurationController.dispose();
-    pirCooldownController.dispose();
+
     super.dispose();
   }
 
@@ -70,30 +65,7 @@ class _MotionSensorWidgetState extends State<MotionSensorWidget> {
             );
           },
         ),
-        const SizedBox(height: 16.0),
-        TextField(
-          controller: ledDurationController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'LED On Duration (ms)',
-            border: OutlineInputBorder(),
-          ),
-          onSubmitted: (value) {
-            print('New LED On Duration: $value');
-          },
-        ),
-        const SizedBox(height: 16.0),
-        TextField(
-          controller: pirCooldownController,
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            labelText: 'PIR Cooldown Time (ms)',
-            border: OutlineInputBorder(),
-          ),
-          onSubmitted: (value) {
-            print('New PIR Cooldown Time: $value');
-          },
-        ),
+
       ],
     );
   }

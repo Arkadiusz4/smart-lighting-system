@@ -24,18 +24,19 @@ class UpdateDevice extends DevicesEvent {
   final String newName;
   final String newType;
   final String newPort;
+  final Map<String, dynamic>? extraFields; // Added extraFields parameter
 
   const UpdateDevice({
     required this.deviceId,
     required this.newName,
     required this.newType,
     required this.newPort,
+    this.extraFields, // extraFields is optional
   });
 
   @override
-  List<Object?> get props => [deviceId, newName, newType, newPort];
+  List<Object?> get props => [deviceId, newName, newType, newPort, extraFields]; // Include extraFields in props for equality checks
 }
-
 class RemoveDevice extends DevicesEvent {
   final String deviceId;
 

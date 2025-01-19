@@ -63,11 +63,24 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   Future<void> _onUpdateDevice(UpdateDevice event, Emitter<DevicesState> emit) async {
     if (state is DevicesLoaded) {
       try {
-        await devicesRepository.updateDevice(event.deviceId, event.newName, event.newType, event.newPort);
+        // Convert extraFields to Map<String, String> if necessary
+        final extraFields = event.extraFields?.map((key, value) {
+          return MapEntry(key, value.toString()); // Ensure all values are strings
+        });
 
+        // Update the device in the repository, including extraFields if provided
+        await devicesRepository.updateDevice(
+          event.deviceId,
+          event.newName,
+          event.newType,
+          event.newPort,
+          extraFields: extraFields, // Pass extraFields
+        );
+
+        // Add a log entry
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
-          message: 'Zedytowano urządzenie: ${event.deviceId}',
+          message: 'Zedytowano urządzenie: ${event.deviceId} z dodatkowymi polami ${event.extraFields}',
           device: 'Device',
           boardId: boardId,
           userId: userId,
@@ -76,6 +89,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
           eventType: 'edit_device',
         ));
 
+        // Fetch updated devices and emit new state
         final devices = await devicesRepository.fetchDevices();
         emit(DevicesLoaded(devices));
       } catch (e) {

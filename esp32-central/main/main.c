@@ -6,7 +6,7 @@
 #include "esp_tls.h"
 #include "mqtt_broker.h"
 #include "esp_log.h"
-#include "pir_led.h"
+// #include "pir_led.h"
 
 void http_request_task(void *pvParameters) {
     esp_tls_init_global_ca_store();
@@ -47,8 +47,10 @@ void wifi_task(void *pvParameters) {
 
 void app_main(void) {
     // xTaskCreate(&ble_task, "ble_task", 8192, NULL, 5, NULL);
+    esp_log_level_set("MQTT_CLIENT", ESP_LOG_VERBOSE);
+
     xTaskCreate(&wifi_task, "wifi_task", 8192, NULL, 5, NULL);
 
-    pir_led_init();
-    xTaskCreate(pir_led_task, "pir_led_task", 2048, NULL, 5, NULL);
+    // pir_led_init();
+    // xTaskCreate(pir_led_task, "pir_led_task", 2048, NULL, 5, NULL);
 }

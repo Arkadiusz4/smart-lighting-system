@@ -4,6 +4,7 @@
 #include "esp_log.h"
 #include "wifi_manager.h"
 #include "oled_display.h"
+#include "mqtt_manager.h"
 #include <string.h>
 #include <ctype.h>
 
@@ -187,7 +188,7 @@ static esp_err_t root_post_handler(httpd_req_t *req) {
         ESP_LOGE(TAG, "Błąd odbioru danych");
         return ESP_FAIL;
     }
-    content[received] = '\0'; // zakończ string
+    content[received] = '\0';
     ESP_LOGI(TAG, "Odebrano dane: %s", content);
 
     cJSON *json = cJSON_Parse(content);
@@ -198,13 +199,20 @@ static esp_err_t root_post_handler(httpd_req_t *req) {
 
     const cJSON *ssid_json = cJSON_GetObjectItemCaseSensitive(json, "ssid");
     const cJSON *password_json = cJSON_GetObjectItemCaseSensitive(json, "password");
+    const cJSON *clientId_json = cJSON_GetObjectItemCaseSensitive(json, "clientId");
+    const cJSON *mqttPassword_json = cJSON_GetObjectItemCaseSensitive(json, "mqttPassword");
 
     const char *ssid = cJSON_IsString(ssid_json) ? ssid_json->valuestring : "";
     const char *password = cJSON_IsString(password_json) ? password_json->valuestring : "";
+    const char *clientId = cJSON_IsString(clientId_json) ? clientId_json->valuestring : "";
+    const char *mqttPassword = cJSON_IsString(mqttPassword_json) ? mqttPassword_json->valuestring : "";
 
-    ESP_LOGI(TAG, "Parsowane dane - SSID: %s, PASSWORD: %s", ssid, password);
+    ESP_LOGI(TAG, "Parsowane dane - SSID: %s, PASSWORD: %s, clientId: %s, mqttPassword: %s",
+             ssid, password, clientId, mqttPassword);
 
     save_wifi_credentials(ssid, password);
+
+    save_mqtt_credentials(clientId, mqttPassword);
 
     cJSON_Delete(json);
 

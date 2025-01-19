@@ -3,7 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
+import 'package:mobile_app/blocs/devices/devices_bloc.dart';
+import 'package:mobile_app/blocs/devices/devices_event.dart';
 import 'package:mobile_app/styles/color.dart';
+
+import '../../../models/device.dart';
+import '../../../models/log_entry.dart';
+import '../../../repositories/devices_repository.dart';
+import '../../../repositories/logs_repository.dart';
 
 class AddPeripheralBoardScreen extends StatefulWidget {
   const AddPeripheralBoardScreen({super.key});
@@ -13,10 +20,11 @@ class AddPeripheralBoardScreen extends StatefulWidget {
       _AddPeripheralBoardScreenState();
 }
 
-class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
+class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen>{
   final TextEditingController _deviceIdController = TextEditingController();
+  final TextEditingController _deviceNameController = TextEditingController();
   String? _selectedRoom;
-  String? clientId;
+
 
   final List<String> _rooms = [
     'Salon',
@@ -60,6 +68,22 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
           children: [
             TextField(
               controller: _deviceIdController,
+              style: const TextStyle(
+                color: textColor,
+                fontSize: 18.0,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: const InputDecoration(
+                labelText: 'Id urządzenia',
+                labelStyle: TextStyle(
+                  color: textColor,
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w300,
+                ),
+              ),
+            ),
+            TextField(
+              controller: _deviceNameController,
               style: const TextStyle(
                 color: textColor,
                 fontSize: 18.0,
@@ -110,18 +134,43 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
-                    onPressed: _deviceIdController.text.isNotEmpty
+                    onPressed: _deviceIdController.text.isNotEmpty && _deviceNameController.text.isNotEmpty
                         ? () async {
-                      final newName = _deviceIdController.text;
+                      final newName = _deviceNameController.text;
+                      final boardId = _deviceIdController.text;
                       final newRoom = _selectedRoom ?? '';
                       context.read<BoardsBloc>().add(
                         AddPeripheralBoard(
-                          boardId: _deviceIdController.text,
+                          boardId: boardId,
                           name: newName,
                           room: newRoom,
                           peripheral: true,
                         ),
                       );
+                    /*  final DevicesBloc deviceBlock =  DevicesBloc(
+                      devicesRepository: DevicesRepository(boardId: boardId),
+                        logsRepository: LogsRepository(),
+                        userId:  FirebaseAuth.instance.currentUser!.uid,
+                        boardId: boardId,
+                      );
+                      deviceBlock.add(LoadDevices());
+                      */
+                      await Future.delayed(const Duration(seconds: 2));
+                      final deviceId = DateTime.now().millisecondsSinceEpoch.toString();
+                      final device = Device(
+                        deviceId: deviceId,
+                        name: "Żarówka",
+                        type: "LED",
+                        port: "GPIO5",
+                        boardId:  boardId,
+                        status: "off",
+                      );
+                      final LogEntry log = LogEntry(timestamp: DateTime.now(), message: "Dodano urządzenie", device: device.name, boardId: boardId, userId: FirebaseAuth.instance.currentUser!.uid, severity: "info");
+
+                      await DevicesRepository(boardId: boardId).addDevice(device);
+
+                      await LogsRepository().addLogEntry(log);
+
 
                       // Display a success message
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -132,9 +181,9 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
                           ),
                         ),
                       );
-
+                      context.read<BoardsBloc>().
                       // Wait for a short duration before popping the screen
-                      await Future.delayed(const Duration(seconds: 2));
+                      await Future.delayed(const Duration(seconds: 1));
 
                       // Pop the current screen to go back
                       Navigator.pop(context);

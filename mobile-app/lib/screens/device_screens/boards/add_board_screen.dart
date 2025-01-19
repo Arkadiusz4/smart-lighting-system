@@ -20,7 +20,7 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   final TextEditingController _nameController = TextEditingController();
   String? _selectedRoom;
   String? _scannedBoardId;
-  String? clientId;
+  late String  clientId;
   String? mqttPassword;
 
   final List<String> _rooms = [
@@ -79,19 +79,19 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   }
 
   Future<void> _addPeripheral() async {
-      final boardsBloc = context.read<BoardsBloc>();
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) {
-            return BlocProvider.value(
-              value: boardsBloc,
-              child: const AddPeripheralBoardScreen(),
-            );
-          },
-        ),
-      );
+    final boardsBloc = context.read<BoardsBloc>();
 
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) {
+          return BlocProvider.value(
+            value: boardsBloc,
+            child: const AddPeripheralBoardScreen(),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> fetchMqttData(String boardId, String userId) async {

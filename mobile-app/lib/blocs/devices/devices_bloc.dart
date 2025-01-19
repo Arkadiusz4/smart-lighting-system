@@ -38,8 +38,9 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
   Future<void> _onAddDevice(AddDevice event, Emitter<DevicesState> emit) async {
     if (state is DevicesLoaded) {
       try {
-        await devicesRepository.addDevice(event.device);
 
+        await devicesRepository.addDevice(event.device);
+        print("za awaitem devices repository");
         await logsRepository.addLogEntry(LogEntry(
           timestamp: DateTime.now(),
           message: 'Dodano urządzenie: ${event.device.name}',

@@ -12,11 +12,13 @@ import 'package:mobile_app/styles/color.dart';
 class DevicesListScreen extends StatelessWidget {
   final String userId;
   final String boardId;
+  final bool isPeripheral;
 
-  const DevicesListScreen({super.key, required this.userId, required this.boardId});
+  const DevicesListScreen({super.key, required this.userId, required this.boardId, required this.isPeripheral});
 
   @override
   Widget build(BuildContext context) {
+
     return BlocProvider(
       create: (context) => DevicesBloc(
         devicesRepository: DevicesRepository(boardId: boardId),
@@ -71,7 +73,8 @@ class DevicesListScreen extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    trailing: Row(
+
+                    trailing:  this.isPeripheral == false ? Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
@@ -149,7 +152,7 @@ class DevicesListScreen extends StatelessWidget {
                           },
                         ),
                       ],
-                    ),
+                    ): null,
                   );
                 },
               );

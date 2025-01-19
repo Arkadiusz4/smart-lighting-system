@@ -181,7 +181,6 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen>{
                           ),
                         ),
                       );
-                      context.read<BoardsBloc>().
                       // Wait for a short duration before popping the screen
                       await Future.delayed(const Duration(seconds: 1));
 

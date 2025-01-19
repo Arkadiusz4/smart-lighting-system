@@ -146,7 +146,7 @@ class DevicesScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => DevicesListScreen(userId: userId, boardId: board.boardId),
+                        builder: (_) => DevicesListScreen(userId: userId, boardId: board.boardId,  isPeripheral: board.peripheral),
                       ),
                     );
                   },

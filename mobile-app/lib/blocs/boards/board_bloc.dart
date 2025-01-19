@@ -81,7 +81,7 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
 
       await logsRepository.addLogEntry(LogEntry(
         timestamp: DateTime.now(),
-        message: 'Usunięto board: ${event.boardId}',
+        message: 'Usunięto board: ${event.boardName}',
         device: 'Board',
         boardId: event.boardId,
         userId: userId,

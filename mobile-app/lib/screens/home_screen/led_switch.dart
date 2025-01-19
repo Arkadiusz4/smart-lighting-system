@@ -57,7 +57,7 @@ class _LedSwitchState extends State<LedSwitch> {
         });
         print("Toggle LED clicked, new value: $value, ${widget.device.boardId}");
         widget.devicesBloc.add(
-          ToggleLed(widget.device.deviceId, value),
+          ToggleLed(widget.device.deviceId, value, widget.device.name),
         );
       },
     );

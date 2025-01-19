@@ -131,7 +131,7 @@ class DevicesListScreen extends StatelessWidget {
                                     TextButton(
                                       onPressed: () {
                                         Navigator.of(context).pop();
-                                        devicesBloc.add(RemoveDevice(device.deviceId));
+                                        devicesBloc.add(RemoveDevice(device.deviceId, device.name));
                                       },
                                       child: const Text(
                                         "Tak",

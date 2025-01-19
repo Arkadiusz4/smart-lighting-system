@@ -39,8 +39,9 @@ class UpdateDevice extends DevicesEvent {
 }
 class RemoveDevice extends DevicesEvent {
   final String deviceId;
+  final String deviceName;
 
-  const RemoveDevice(this.deviceId);
+  const RemoveDevice(this.deviceId, this.deviceName);
 
   @override
   List<Object?> get props => [deviceId];
@@ -49,19 +50,21 @@ class RemoveDevice extends DevicesEvent {
 class ToggleLed extends DevicesEvent {
   final String deviceId;
   final bool newStatus;
+  final String deviceName;
 
-  const ToggleLed(this.deviceId, this.newStatus);
+  const ToggleLed(this.deviceId, this.newStatus, this.deviceName);
 
   @override
-  List<Object?> get props => [deviceId, newStatus];
+  List<Object?> get props => [deviceId, newStatus, deviceName];
 }
 
 class ToggleMotionSensor extends DevicesEvent {
   final String deviceId;
   final bool newStatus;
+  final String deviceName;
 
-  const ToggleMotionSensor(this.deviceId, this.newStatus);
+  const ToggleMotionSensor(this.deviceId, this.newStatus, this.deviceName);
 
   @override
-  List<Object?> get props => [deviceId, newStatus];
+  List<Object?> get props => [deviceId, newStatus, deviceName];
 }

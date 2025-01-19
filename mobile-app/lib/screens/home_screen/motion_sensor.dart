@@ -60,7 +60,7 @@ class _MotionSensorWidgetState extends State<MotionSensorWidget> {
             print(
                 "Toggle MotionSensor clicked, new value: $value, ${widget.motionSensor.boardId}");
             widget.devicesBloc.add(
-              ToggleMotionSensor(widget.motionSensor.deviceId, value),
+              ToggleMotionSensor(widget.motionSensor.deviceId, value, widget.motionSensor.name),
             );
           },
         ),

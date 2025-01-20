@@ -8,11 +8,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "mqtt_client.h"
+#include "board_manager.h"
 
 static esp_mqtt_client_handle_t mqtt_client = NULL;
 
 #define TAG "BLE_CENTRAL"
-#define REMOTE_DEVICE_NAME "ESP32-C3-BLE"
 #define PROFILE_APP_ID 0
 
 #define REMOTE_SERVICE_UUID 0x00FF
@@ -55,7 +55,8 @@ esp_err_t ble_central_write_led(const char *cmd) {
         return ESP_FAIL;
     }
     size_t cmd_len = strlen(cmd);
-    if (cmd_len > 20) cmd_len = 20;
+    if (cmd_len > 20)
+        cmd_len = 20;
     esp_err_t err = esp_ble_gattc_write_char(
             gattc_if_global,
             conn_id_global,
@@ -63,8 +64,7 @@ esp_err_t ble_central_write_led(const char *cmd) {
             cmd_len,
             (uint8_t *) cmd,
             ESP_GATT_WRITE_TYPE_RSP,
-            ESP_GATT_AUTH_REQ_NONE
-    );
+            ESP_GATT_AUTH_REQ_NONE);
     ESP_LOGI(TAG, "Write LED: %s (err=%s)", cmd, esp_err_to_name(err));
     return err;
 }
@@ -75,7 +75,6 @@ static void led_toggle_task(void *pv) {
             ble_central_write_led("on");
             vTaskDelay(pdMS_TO_TICKS(5000));
 
-            // Wyłącz LED
             ble_central_write_led("off");
             vTaskDelay(pdMS_TO_TICKS(5000));
         } else {
@@ -87,7 +86,6 @@ static void led_toggle_task(void *pv) {
 void ble_central_start_toggle_task(void) {
     xTaskCreate(led_toggle_task, "led_toggle_task", 4096, NULL, 5, NULL);
 }
-
 
 esp_err_t ble_central_init(void) {
     esp_err_t ret;
@@ -275,9 +273,9 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
                                  scan_result->scan_rst.rssi);
                     }
 
-                    if (adv_name != NULL && strlen(REMOTE_DEVICE_NAME) == adv_name_len &&
-                        strncmp((char *) adv_name, REMOTE_DEVICE_NAME, adv_name_len) == 0) {
-                        ESP_LOGI(TAG, "Found target device: %s", REMOTE_DEVICE_NAME);
+                    if (adv_name != NULL && strlen(remote_device_name) == adv_name_len &&
+                        strncmp((char *) adv_name, remote_device_name, adv_name_len) == 0) {
+                        ESP_LOGI(TAG, "Found target device: %s", remote_device_name);
                         if (!connect) {
                             connect = true;
                             ESP_LOGI(TAG, "Connecting to the device...");

@@ -33,35 +33,53 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 snprintf(subscribe_topic, sizeof(subscribe_topic), "boards/%s/devices/+", s_board_id);
                 esp_mqtt_client_subscribe(client, subscribe_topic, 1);
             }
-            esp_mqtt_client_subscribe(client, "central/command", 1);
+            esp_mqtt_client_subscribe(client, "central/command/#", 1);
 
             break;
 
         case MQTT_EVENT_DATA: {
             ESP_LOGI(TAG, "MQTT_EVENT_DATA");
 
-            char *cmd_topic = strndup(event->topic, event->topic_len);
-            char *cmd_data = strndup(event->data, event->data_len);
-            ESP_LOGI(TAG, "MQTT Data received on topic: %s, data: %s", cmd_topic, cmd_data);
+            char *incoming_topic = strndup(event->topic, event->topic_len);
+            char *incoming_data = strndup(event->data, event->data_len);
+            ESP_LOGI(TAG, "MQTT Data received on topic: %s, data: %s", incoming_topic, incoming_data);
 
-            if (strcmp(cmd_topic, "central/command") == 0) {
-                if (strcmp(cmd_data, "scan") == 0) {
-                    ESP_LOGI(TAG, "MQTT command 'scan' received: starting scan");
-                    esp_ble_gap_start_scanning(30);
-                } else if (strcmp(cmd_data, "led_on") == 0) {
-                    ESP_LOGI(TAG, "MQTT command 'led_on' received");
-                    ble_central_write_led("on");
-                } else if (strcmp(cmd_data, "led_off") == 0) {
-                    ESP_LOGI(TAG, "MQTT command 'led_off' received");
-                    ble_central_write_led("off");
-                }
+            if (strncmp(incoming_topic, "central/command/scan", strlen("central/command/scan")) == 0) {
+                strncpy(remote_device_name, incoming_data, sizeof(remote_device_name) - 1);
+                remote_device_name[sizeof(remote_device_name) - 1] = '\0';
+                ESP_LOGI(TAG, "Setting remote device name to: %s", remote_device_name);
+                esp_ble_gap_start_scanning(30);
+            } else if (strncmp(incoming_topic, "central/command/led_on", strlen("central/command/led_on")) == 0) {
+                ESP_LOGI(TAG, "MQTT command 'led_on' received");
+                ble_central_write_led("on");
+            } else if (strncmp(incoming_topic, "central/command/led_off", strlen("central/command/led_off")) == 0) {
+                ESP_LOGI(TAG, "MQTT command 'led_off' received");
+                ble_central_write_led("off");
             }
-            free(cmd_topic);
-            free(cmd_data);
+
+            free(incoming_topic);
+            free(incoming_data);
 
             char *topic = strndup(event->topic, event->topic_len);
             char *payload_str = strndup(event->data, event->data_len);
             ESP_LOGI(TAG, "Odebrano na temat: %s, dane: %s", topic, payload_str);
+
+            if (strncmp(topic, "central/command/scan", strlen("central/command/scan")) == 0) {
+                free(topic);
+                free(payload_str);
+                break;
+            }
+            if (strncmp(topic, "central/command/led_on", strlen("central/command/led_on")) == 0) {
+                free(topic);
+                free(payload_str);
+                break;
+            }
+            if (strncmp(topic, "central/command/led_off", strlen("central/command/led_off")) == 0) {
+                free(topic);
+                free(payload_str);
+                break;
+            }
+
 
             cJSON *json = cJSON_Parse(payload_str);
             if (json == NULL) {

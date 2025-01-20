@@ -3,6 +3,7 @@
 #include <string.h>
 
 char s_board_id[32] = "defaultBoardId";
+char remote_device_name[32] = "defaultDeviceName";
 
 esp_err_t save_board_id(const char *board_id) {
     nvs_handle_t nvs_handle;

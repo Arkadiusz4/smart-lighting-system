@@ -14,15 +14,13 @@ class AddPeripheralBoardScreen extends StatefulWidget {
   const AddPeripheralBoardScreen({super.key});
 
   @override
-  _AddPeripheralBoardScreenState createState() =>
-      _AddPeripheralBoardScreenState();
+  _AddPeripheralBoardScreenState createState() => _AddPeripheralBoardScreenState();
 }
 
-class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen>{
+class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
   final TextEditingController _deviceIdController = TextEditingController();
   final TextEditingController _deviceNameController = TextEditingController();
   String? _selectedRoom;
-
 
   final List<String> _rooms = [
     'Salon',
@@ -134,57 +132,52 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen>{
                   ElevatedButton(
                     onPressed: _deviceIdController.text.isNotEmpty && _deviceNameController.text.isNotEmpty
                         ? () async {
-                      final newName = _deviceNameController.text;
-                      final boardId = _deviceIdController.text;
-                      final newRoom = _selectedRoom ?? '';
-                      context.read<BoardsBloc>().add(
-                        AddPeripheralBoard(
-                          boardId: boardId,
-                          name: newName,
-                          room: newRoom,
-                          peripheral: true,
-                        ),
-                      );
-                    /*  final DevicesBloc deviceBlock =  DevicesBloc(
-                      devicesRepository: DevicesRepository(boardId: boardId),
-                        logsRepository: LogsRepository(),
-                        userId:  FirebaseAuth.instance.currentUser!.uid,
-                        boardId: boardId,
-                      );
-                      deviceBlock.add(LoadDevices());
-                      */
-                      await Future.delayed(const Duration(seconds: 2));
-                      final deviceId = DateTime.now().millisecondsSinceEpoch.toString();
-                      final device = Device(
-                        deviceId: deviceId,
-                        name: "Żarówka",
-                        type: "LED",
-                        port: "GPIO5",
-                        boardId:  boardId,
-                        status: "off",
-                      );
-                      final LogEntry log = LogEntry(timestamp: DateTime.now(), message: "Dodano urządzenie", device: device.name, boardId: boardId, userId: FirebaseAuth.instance.currentUser!.uid, severity: "info");
+                            final newName = _deviceNameController.text.trim();
+                            final boardId = _deviceIdController.text.trim();
+                            final newRoom = _selectedRoom ?? '';
+                            context.read<BoardsBloc>().add(
+                                  AddPeripheralBoard(
+                                    boardId: boardId,
+                                    name: newName,
+                                    room: newRoom,
+                                    peripheral: true,
+                                  ),
+                                );
 
-                      await DevicesRepository(boardId: boardId).addDevice(device);
+                            await Future.delayed(const Duration(seconds: 2));
+                            final deviceId = DateTime.now().millisecondsSinceEpoch.toString();
+                            final device = Device(
+                              deviceId: deviceId,
+                              name: "Żarówka",
+                              type: "LED",
+                              port: "GPIO5",
+                              boardId: boardId,
+                              status: "off",
+                            );
+                            final LogEntry log = LogEntry(
+                                timestamp: DateTime.now(),
+                                message: "Dodano urządzenie",
+                                device: device.name,
+                                boardId: boardId,
+                                userId: FirebaseAuth.instance.currentUser!.uid,
+                                severity: "info");
 
-                      await LogsRepository().addLogEntry(log);
+                            await DevicesRepository(boardId: boardId).addDevice(device);
 
+                            await LogsRepository().addLogEntry(log);
 
-                      // Display a success message
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                            'Urządzenie peripheral zostało dodane!',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                        ),
-                      );
-                      // Wait for a short duration before popping the screen
-                      await Future.delayed(const Duration(seconds: 1));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Urządzenie peripheral zostało dodane!',
+                                  style: TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            );
+                            await Future.delayed(const Duration(seconds: 1));
 
-                      // Pop the current screen to go back
-                      Navigator.pop(context);
-                    }
+                            Navigator.pop(context);
+                          }
                         : null,
                     child: const Text('Connect'),
                   ),

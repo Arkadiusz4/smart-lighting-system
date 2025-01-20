@@ -1,5 +1,5 @@
 IDF_PATH := /Users/amika/Documents/esp/esp-idf
-PORT := /dev/cu.usbmodem2101
+PORT := /dev/cu.usbmodem1101
 BAUD := 115200
 TARGET := esp32c3
 

@@ -93,6 +93,36 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
       ),
     );
   }
+  Future<bool> isCentralDeviceAdded(String userId) async{
+    try{
+      print("Inside this");
+      final firestore = FirebaseFirestore.instance;
+      print(userId);
+      final snapshot = await firestore
+          .collection('boards')
+          .where('assigned_to', isEqualTo: userId)
+          .where('peripheral', isEqualTo: false)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isNotEmpty){
+        final data = snapshot.docs.first.data();
+        print(data);
+        return true;
+      }
+      else{
+        print("Returning false");
+        return false;
+      }
+    }
+
+    catch (e) {
+      print('Błąd podczas pobierania danych MQTT: $e');
+      return false;
+    }
+
+
+  }
 
   Future<void> fetchMqttData(String boardId, String userId) async {
     try {
@@ -195,17 +225,32 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                 ),
               ),
             ),
-
-            ElevatedButton.icon(
-              onPressed: _addPeripheral,
-           //   icon: const Icon(Icons.qr_code_scanner),
-              label: const Text(
-                'Dodaj urządzenie peripheral',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+            FutureBuilder<bool>(
+              future: isCentralDeviceAdded(userId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text(
+                    'Błąd: ${snapshot.error}',
+                    style: const TextStyle(color: Colors.red),
+                  );
+                } else if (snapshot.hasData && snapshot.data == true) {
+                  return ElevatedButton.icon(
+                    onPressed: _addPeripheral,
+                    icon: const Icon(Icons.add),
+                    label: const Text(
+                      'Dodaj urządzenie peripheral',
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
+              },
             ),
             const SizedBox(height: 20.0),
             Text(

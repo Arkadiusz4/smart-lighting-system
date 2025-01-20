@@ -5,20 +5,6 @@ import 'package:mobile_app/blocs/devices/devices_event.dart';
 import 'package:mobile_app/models/device.dart';
 import 'package:mobile_app/styles/color.dart';
 
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mobile_app/blocs/devices/devices_bloc.dart';
-import 'package:mobile_app/blocs/devices/devices_event.dart';
-import 'package:mobile_app/models/device.dart';
-import 'package:mobile_app/styles/color.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:mobile_app/blocs/devices/devices_bloc.dart';
-import 'package:mobile_app/blocs/devices/devices_event.dart';
-import 'package:mobile_app/models/device.dart';
-import 'package:mobile_app/styles/color.dart';
-
 class AddDeviceScreen extends StatefulWidget {
   final String boardId;
 
@@ -194,23 +180,43 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
               onPressed: () {
                 final name = _nameController.text.trim();
                 if (name.isEmpty) {
-                  // Show a snackbar or any other notification to the user
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Nazwa urządzenia nie może być pusta'),
                     ),
                   );
-                  return; // Stop further execution if name is empty
+                  return;
+                }
+
+                // If device is "Sensor ruchu", validate durations
+                if (_selectedDevice == 'Sensor ruchu') {
+                  final ledDuration = int.tryParse(_ledOnDurationController.text.trim());
+                  final pirCooldown = int.tryParse(_pirCooldownTimeController.text.trim());
+
+                  if (ledDuration == null || ledDuration <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Led On Duration musi być liczbą większą od 0'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (pirCooldown == null || pirCooldown <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('PIR Cooldown Time musi być liczbą większą od 0'),
+                      ),
+                    );
+                    return;
+                  }
                 }
 
                 final type = _selectedDevice ?? _devices.first;
                 final port = _selectedPort ?? _ports.first;
-
                 final devicesBloc = context.read<DevicesBloc>();
-
                 final deviceId = DateTime.now().millisecondsSinceEpoch.toString();
 
-                // Construct extraFields for "Sensor ruchu"
                 final extraFields = _selectedDevice == 'Sensor ruchu'
                     ? {
                   'led_on_duration': _ledOnDurationController.text,

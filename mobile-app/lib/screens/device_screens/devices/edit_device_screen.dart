@@ -41,10 +41,9 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.device.name);
-    // Inicjalizacja wybranego portu na podstawie danych urządzenia
     _selectedPort = widget.device.port;
 
-    // Inicjalizacja kontrolerów dla specyficznych pól czujnika ruchu
+    // Initialize controllers for "sensor ruchu" specific fields
     if (widget.device.type.toLowerCase() == 'sensor ruchu') {
       _ledOnDurationController = TextEditingController(
         text: (widget.device.extraFields?['led_on_duration'] ?? '').toString(),
@@ -85,21 +84,20 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
               style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 10),
-            // Zastąpienie TextField listą rozwijaną dla portu z dostosowanym stylem
             DropdownButtonFormField<String>(
               value: _selectedPort,
               decoration: const InputDecoration(
                 labelText: 'Port',
                 labelStyle: TextStyle(color: Colors.white),
               ),
-              style: const TextStyle(color: Colors.white),           // Kolor tekstu wybranego elementu
-              dropdownColor: Colors.black,                           // Kolor tła menu rozwijanego
+              style: const TextStyle(color: Colors.white),
+              dropdownColor: Colors.black,
               items: _ports.map((port) {
                 return DropdownMenuItem(
                   value: port,
                   child: Text(
                     port,
-                    style: const TextStyle(color: Colors.white),    // Kolor tekstu opcji
+                    style: const TextStyle(color: Colors.white),
                   ),
                 );
               }).toList(),
@@ -139,7 +137,7 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
                 final newName = _nameController.text.trim();
                 final newPort = _selectedPort?.trim() ?? '';
 
-                // Walidacja: nazwa urządzenia nie może być pusta
+                // Validate: device name cannot be empty
                 if (newName.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -150,7 +148,8 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
                 }
 
                 Map<String, dynamic>? extraFields;
-                // Walidacja pól dla 'sensor ruchu'
+
+                // Validate fields for 'sensor ruchu'
                 if (widget.device.type.toLowerCase() == 'sensor ruchu') {
                   final ledDurationText = _ledOnDurationController?.text.trim() ?? '';
                   final pirCooldownText = _pirCooldownTimeController?.text.trim() ?? '';
@@ -158,6 +157,7 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
                   final ledDuration = int.tryParse(ledDurationText);
                   final pirCooldown = int.tryParse(pirCooldownText);
 
+                  // Check if parsing succeeded
                   if (ledDuration == null || pirCooldown == null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -169,13 +169,32 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
                     return;
                   }
 
+                  // Validate that durations are greater than 0
+                  if (ledDuration <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Czas świecenia diody musi być większy od 0.'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (pirCooldown <= 0) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Czas chłodzenia PIR musi być większy od 0.'),
+                      ),
+                    );
+                    return;
+                  }
+
                   extraFields = {
                     'led_on_duration': ledDuration,
                     'pir_cooldown_time': pirCooldown,
                   };
                 }
 
-                // Wywołanie zdarzenia aktualizacji urządzenia
+                // Trigger update event for device
                 context.read<DevicesBloc>().add(UpdateDevice(
                   deviceId: widget.device.deviceId,
                   newName: newName,
@@ -184,7 +203,7 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
                   extraFields: extraFields,
                 ));
 
-                Navigator.of(context).pop(); // Powrót do poprzedniego ekranu
+                Navigator.of(context).pop(); // Return to previous screen
               },
               child: const Text('Zapisz zmiany'),
             ),

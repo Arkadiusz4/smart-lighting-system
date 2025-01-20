@@ -79,27 +79,54 @@ class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
 
   Future<void> _onRemoveBoard(RemoveBoard event, Emitter<BoardsState> emit) async {
     try {
-      await boardsRepository.unassignBoard(event.boardId, event.userId);
+      if(event.isPeripheral){
 
-      await logsRepository.addLogEntry(LogEntry(
-        timestamp: DateTime.now(),
-        message: 'Usunięto board: ${event.boardName}',
-        device: 'Board',
-        boardId: event.boardId,
-        userId: userId,
-        severity: 'info',
-        status: null,
-        wifiStatus: null,
-        eventType: 'unassign_board',
-      ));
+        await boardsRepository.removeDevices(event.boardId);
 
-      final boards = await boardsRepository.fetchBoards(userId);
-      final defaultBoardId = boards.isNotEmpty ? boards.first.boardId : null;
+        await boardsRepository.removeBoard(event.boardId);
 
-      emit(BoardsLoaded(
-        boards: boards,
-        currentBoardId: defaultBoardId,
-      ));
+        await logsRepository.addLogEntry(LogEntry(
+          timestamp: DateTime.now(),
+          message: 'Usunięto board: ${event.boardName}',
+          device: 'Board',
+          boardId: event.boardId,
+          userId: userId,
+          severity: 'info',
+          status: null,
+          wifiStatus: null,
+          eventType: 'remove_board',
+        ));
+        final boards = await boardsRepository.fetchBoards(userId);
+        final defaultBoardId = boards.isNotEmpty ? boards.first.boardId : null;
+
+        emit(BoardsLoaded(
+          boards: boards,
+          currentBoardId: defaultBoardId,
+        ));
+      }
+      else {
+        await boardsRepository.unassignBoard(event.boardId, event.userId);
+
+        await logsRepository.addLogEntry(LogEntry(
+          timestamp: DateTime.now(),
+          message: 'Usunięto board: ${event.boardName}',
+          device: 'Board',
+          boardId: event.boardId,
+          userId: userId,
+          severity: 'info',
+          status: null,
+          wifiStatus: null,
+          eventType: 'unassign_board',
+        ));
+
+        final boards = await boardsRepository.fetchBoards(userId);
+        final defaultBoardId = boards.isNotEmpty ? boards.first.boardId : null;
+
+        emit(BoardsLoaded(
+          boards: boards,
+          currentBoardId: defaultBoardId,
+        ));
+      }
     } catch (e) {
       emit(BoardsError(e.toString()));
     }

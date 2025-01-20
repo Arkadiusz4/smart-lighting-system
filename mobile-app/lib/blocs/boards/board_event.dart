@@ -28,11 +28,12 @@ class RemoveBoard extends BoardsEvent {
   final String boardId;
   final String userId;
   final String boardName;
+  final bool isPeripheral;
 
-  const RemoveBoard(this.boardId, this.userId, this.boardName);
+  const RemoveBoard(this.boardId, this.userId, this.boardName, this.isPeripheral);
 
   @override
-  List<Object?> get props => [boardId, userId, boardName];
+  List<Object?> get props => [boardId, userId, boardName, isPeripheral];
 }
 
 class AddBoard extends BoardsEvent {

@@ -11,7 +11,10 @@ class BoardsRepository {
   /// Pobiera boardy przypisane do konkretnego użytkownika.
   Future<List<Board>> fetchBoards(String userId) async {
     try {
-      final snapshot = await _firestore.collection('boards').where('assigned_to', isEqualTo: userId).get();
+      final snapshot = await _firestore
+          .collection('boards')
+          .where('assigned_to', isEqualTo: userId)
+          .get();
 
       return snapshot.docs.map((doc) {
         final data = doc.data();
@@ -39,8 +42,10 @@ class BoardsRepository {
     final boardRef = _firestore.collection('boards').doc(boardId);
     final boardDoc = await boardRef.get();
 
-    final mqttClientRef =
-        _firestore.collection('mqtt_clients').where('boardId', isEqualTo: boardId).where('clientId', isEqualTo: userId);
+    final mqttClientRef = _firestore
+        .collection('mqtt_clients')
+        .where('boardId', isEqualTo: boardId)
+        .where('clientId', isEqualTo: userId);
 
     final querySnapshot = await mqttClientRef.get();
 
@@ -60,7 +65,8 @@ class BoardsRepository {
       final data = boardDoc.data();
       print('Board już istnieje: $data');
       if (data != null && data['assigned_to'] != null) {
-        throw Exception('Urządzenie jest już przypisane do innego użytkownika.');
+        throw Exception(
+            'Urządzenie jest już przypisane do innego użytkownika.');
       }
       print('Aktualizacja istniejącego boarda');
       await boardRef.update({
@@ -69,7 +75,6 @@ class BoardsRepository {
         'assigned_to': userId,
         'name': name,
         'room': room,
-
       });
     }
 
@@ -87,7 +92,8 @@ class BoardsRepository {
       print('MqttClient już istnieje: $data');
 
       if (data['userId'] != null && data['userId'] != userId) {
-        throw Exception('Urządzenie jest już przypisane do innego użytkownika.');
+        throw Exception(
+            'Urządzenie jest już przypisane do innego użytkownika.');
       }
 
       await mqttClientDoc.reference.update({
@@ -104,12 +110,13 @@ class BoardsRepository {
     required String room,
     required bool peripheral,
   }) async {
-    print('Attempting to register peripheral board: $boardId for user: $userId');
+    print(
+        'Attempting to register peripheral board: $boardId for user: $userId');
 
     final boardRef = _firestore.collection('boards').doc(boardId);
 
     final boardDoc = await boardRef.get();
-;
+    ;
 
     if (!boardDoc.exists) {
       print('Board does not exist, creating a new document');
@@ -140,7 +147,8 @@ class BoardsRepository {
     }
   }
 
-  Future<void> updateBoard(String boardId, String newName, String newRoom) async {
+  Future<void> updateBoard(
+      String boardId, String newName, String newRoom) async {
     try {
       await _firestore.collection('boards').doc(boardId).update({
         'name': newName,
@@ -159,9 +167,25 @@ class BoardsRepository {
     }
   }
 
+  Future<void> removeDevices(String boardId) async {
+    try {
+      CollectionReference devicesRef =
+          _firestore.collection('boards').doc(boardId).collection('devices');
+
+      QuerySnapshot devicesSnapshot = await devicesRef.get();
+
+      for (DocumentSnapshot doc in devicesSnapshot.docs) {
+        await doc.reference.delete();
+      }
+    } catch (e) {
+      throw Exception('Error unassigning board: $e');
+    }
+  }
+
   Future<void> unassignBoard(String boardId, String userId) async {
     try {
-      CollectionReference devicesRef = _firestore.collection('boards').doc(boardId).collection('devices');
+      CollectionReference devicesRef =
+          _firestore.collection('boards').doc(boardId).collection('devices');
 
       QuerySnapshot devicesSnapshot = await devicesRef.get();
 
@@ -177,8 +201,10 @@ class BoardsRepository {
         'room': null,
       });
 
-      final mqttClientRef =
-          _firestore.collection('mqtt_clients').where('boardId', isEqualTo: boardId).where('userId', isEqualTo: userId);
+      final mqttClientRef = _firestore
+          .collection('mqtt_clients')
+          .where('boardId', isEqualTo: boardId)
+          .where('userId', isEqualTo: userId);
       print("After query");
       print(boardId);
       print(userId);
@@ -190,13 +216,15 @@ class BoardsRepository {
         mqttClientDoc.reference.delete();
       }
 
-      print('Board $boardId został unassignowany, a wszystkie urządzenia zostały usunięte.');
+      print(
+          'Board $boardId został unassignowany, a wszystkie urządzenia zostały usunięte.');
     } catch (e) {
       throw Exception('Error unassigning board: $e');
     }
   }
 
-  Future<Map<String, dynamic>?> fetchMqttClient(String boardId, String userId) async {
+  Future<Map<String, dynamic>?> fetchMqttClient(
+      String boardId, String userId) async {
     final snapshot = await _firestore
         .collection('mqtt_clients')
         .where('boardId', isEqualTo: boardId)

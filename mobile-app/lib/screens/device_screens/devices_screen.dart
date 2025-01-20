@@ -123,7 +123,7 @@ class DevicesScreen extends StatelessWidget {
                                   TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
-                                      devicesBloc.add(RemoveBoard(board.boardId,userId, board.name));
+                                      devicesBloc.add(RemoveBoard(board.boardId,userId, board.name, board.peripheral));
                                     },
                                     child: const Text(
                                       "Tak",

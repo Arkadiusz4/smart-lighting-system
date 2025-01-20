@@ -17,24 +17,40 @@ class EditDeviceScreen extends StatefulWidget {
 
 class _EditDeviceScreenState extends State<EditDeviceScreen> {
   late TextEditingController _nameController;
-  late TextEditingController _portController;
   TextEditingController? _ledOnDurationController;
   TextEditingController? _pirCooldownTimeController;
+
+  final List<String> _ports = [
+    'GPIO1',
+    'GPIO2',
+    'GPIO3',
+    'GPIO4',
+    'GPIO5',
+    'GPIO6',
+    'GPIO7',
+    'GPIO8',
+    'GPIO9',
+    'GPIO10',
+    'GPIO16',
+    'UART0',
+  ];
+
+  String? _selectedPort;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.device.name);
-    _portController = TextEditingController(text: widget.device.port);
+    // Inicjalizacja wybranego portu na podstawie danych urządzenia
+    _selectedPort = widget.device.port;
 
-// Initialize controllers for motion sensor specific fields if applicable
+    // Inicjalizacja kontrolerów dla specyficznych pól czujnika ruchu
     if (widget.device.type.toLowerCase() == 'sensor ruchu') {
       _ledOnDurationController = TextEditingController(
         text: (widget.device.extraFields?['led_on_duration'] ?? '').toString(),
       );
       _pirCooldownTimeController = TextEditingController(
-        text:
-            (widget.device.extraFields?['pir_cooldown_time'] ?? '').toString(),
+        text: (widget.device.extraFields?['pir_cooldown_time'] ?? '').toString(),
       );
     }
   }
@@ -42,7 +58,6 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _portController.dispose();
     _ledOnDurationController?.dispose();
     _pirCooldownTimeController?.dispose();
     super.dispose();
@@ -67,19 +82,38 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
             const SizedBox(height: 10),
             Text(
               'Typ urządzenia: ${widget.device.type}',
-              style:
-                  const TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+              style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 10),
-            TextField(
-              controller: _portController,
-              decoration: const InputDecoration(labelText: 'Port'),
+            // Zastąpienie TextField listą rozwijaną dla portu z dostosowanym stylem
+            DropdownButtonFormField<String>(
+              value: _selectedPort,
+              decoration: const InputDecoration(
+                labelText: 'Port',
+                labelStyle: TextStyle(color: Colors.white),
+              ),
+              style: const TextStyle(color: Colors.white),           // Kolor tekstu wybranego elementu
+              dropdownColor: Colors.black,                           // Kolor tła menu rozwijanego
+              items: _ports.map((port) {
+                return DropdownMenuItem(
+                  value: port,
+                  child: Text(
+                    port,
+                    style: const TextStyle(color: Colors.white),    // Kolor tekstu opcji
+                  ),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                setState(() {
+                  _selectedPort = newValue;
+                });
+              },
             ),
             if (widget.device.type.toLowerCase() == 'sensor ruchu') ...[
               const SizedBox(height: 20),
               TextField(
                 controller: _ledOnDurationController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                 ],
@@ -90,7 +124,7 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
               const SizedBox(height: 10),
               TextField(
                 controller: _pirCooldownTimeController,
-                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: <TextInputFormatter>[
                   FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                 ],
@@ -103,9 +137,9 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
             ElevatedButton(
               onPressed: () {
                 final newName = _nameController.text.trim();
-                final newPort = _portController.text.trim();
+                final newPort = _selectedPort?.trim() ?? '';
 
-// Validate that device name is not empty
+                // Walidacja: nazwa urządzenia nie może być pusta
                 if (newName.isEmpty) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -116,14 +150,11 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
                 }
 
                 Map<String, dynamic>? extraFields;
-// Validate decimal fields for sensor ruchu
+                // Walidacja pól dla 'sensor ruchu'
                 if (widget.device.type.toLowerCase() == 'sensor ruchu') {
-                  final ledDurationText =
-                      _ledOnDurationController?.text.trim() ?? '';
-                  final pirCooldownText =
-                      _pirCooldownTimeController?.text.trim() ?? '';
+                  final ledDurationText = _ledOnDurationController?.text.trim() ?? '';
+                  final pirCooldownText = _pirCooldownTimeController?.text.trim() ?? '';
 
-// Try parsing the decimal values
                   final ledDuration = int.tryParse(ledDurationText);
                   final pirCooldown = int.tryParse(pirCooldownText);
 
@@ -144,16 +175,16 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
                   };
                 }
 
-// Dispatch update event
+                // Wywołanie zdarzenia aktualizacji urządzenia
                 context.read<DevicesBloc>().add(UpdateDevice(
-                      deviceId: widget.device.deviceId,
-                      newName: newName,
-                      newType: widget.device.type,
-                      newPort: newPort,
-                      extraFields: extraFields,
-                    ));
+                  deviceId: widget.device.deviceId,
+                  newName: newName,
+                  newType: widget.device.type,
+                  newPort: newPort,
+                  extraFields: extraFields,
+                ));
 
-                Navigator.of(context).pop(); // Go back to the previous screen
+                Navigator.of(context).pop(); // Powrót do poprzedniego ekranu
               },
               child: const Text('Zapisz zmiany'),
             ),

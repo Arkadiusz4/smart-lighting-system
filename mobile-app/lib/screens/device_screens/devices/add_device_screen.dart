@@ -5,6 +5,20 @@ import 'package:mobile_app/blocs/devices/devices_event.dart';
 import 'package:mobile_app/models/device.dart';
 import 'package:mobile_app/styles/color.dart';
 
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_app/blocs/devices/devices_bloc.dart';
+import 'package:mobile_app/blocs/devices/devices_event.dart';
+import 'package:mobile_app/models/device.dart';
+import 'package:mobile_app/styles/color.dart';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_app/blocs/devices/devices_bloc.dart';
+import 'package:mobile_app/blocs/devices/devices_event.dart';
+import 'package:mobile_app/models/device.dart';
+import 'package:mobile_app/styles/color.dart';
+
 class AddDeviceScreen extends StatefulWidget {
   final String boardId;
 
@@ -178,7 +192,17 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
             const SizedBox(height: 50.0),
             ElevatedButton(
               onPressed: () {
-                final name = _nameController.text;
+                final name = _nameController.text.trim();
+                if (name.isEmpty) {
+                  // Show a snackbar or any other notification to the user
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Nazwa urządzenia nie może być pusta'),
+                    ),
+                  );
+                  return; // Stop further execution if name is empty
+                }
+
                 final type = _selectedDevice ?? _devices.first;
                 final port = _selectedPort ?? _ports.first;
 
@@ -200,8 +224,9 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                   type: type,
                   port: port,
                   boardId: widget.boardId,
-                  extraFields: extraFields, // Pass extraFields
+                  extraFields: extraFields,
                 );
+
                 devicesBloc.add(AddDevice(device));
                 Navigator.of(context).pop();
               },

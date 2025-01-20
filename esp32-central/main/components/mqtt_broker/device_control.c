@@ -9,7 +9,7 @@
 #include "esp_timer.h"
 #include "mqtt_client.h"
 
-static const char *TAG = "DEVICE_CONTROL"
+static const char *TAG = "DEVICE_CONTROL";
 
 #define MAX_DEVICES 10
 

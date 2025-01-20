@@ -16,6 +16,10 @@
 
 #define LED_GPIO_PIN GPIO_NUM_4
 
+#define MAX_RECONNECT_ATTEMPTS 5
+
+static int sta_disconnect_count = 0;
+
 static const char *TAG = "wifi_manager";
 static bool wifi_connected = false;
 static TaskHandle_t led_task_handle = NULL;
@@ -56,17 +60,28 @@ static void wifi_event_handler(void *arg, esp_event_base_t event_base,
             case WIFI_EVENT_STA_CONNECTED:
                 ESP_LOGI(TAG, "Połączono z siecią Wi-Fi.");
                 wifi_connected = true;
+                sta_disconnect_count = 0;
                 oled_clear_display();
                 oled_draw_text(0, 0, "Wi-Fi Connected!");
                 oled_update_display();
                 break;
-            case WIFI_EVENT_STA_DISCONNECTED:
-                ESP_LOGI(TAG, "Odłączono od sieci Wi-Fi, ponawiam próbę połączenia...");
+            case WIFI_EVENT_STA_DISCONNECTED: {
+                wifi_event_sta_disconnected_t *disconn = event_data;
+                ESP_LOGI(TAG, "Odłączono od sieci Wi-Fi, reason: %d", disconn->reason);
                 wifi_connected = false;
-                esp_wifi_connect();
+                sta_disconnect_count++;
                 oled_clear_display();
                 oled_draw_text(0, 0, "Wi-Fi Disconnected");
                 oled_update_display();
+
+                if (sta_disconnect_count < MAX_RECONNECT_ATTEMPTS) {
+                    ESP_LOGI(TAG, "Ponawiam próbę połączenia (%d/%d)...",
+                             sta_disconnect_count, MAX_RECONNECT_ATTEMPTS);
+                    esp_wifi_connect();
+                } else {
+                    ESP_LOGW(TAG, "Maksymalna liczba prób osiągnięta. Tryb AP aktywny.");
+                }
+            }
                 break;
             default:
                 break;

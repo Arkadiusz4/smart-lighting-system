@@ -4,6 +4,9 @@
 #include "esp_err.h"
 #include "esp_gatts_api.h"
 
+extern bool ble_led_active;
+extern bool photoresistor_enabled;
+
 esp_err_t gatt_server_init(void);
 
 #endif // GATT_SERVER_H

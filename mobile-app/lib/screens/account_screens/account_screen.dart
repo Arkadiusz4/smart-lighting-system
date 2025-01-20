@@ -33,20 +33,20 @@ class AccountScreen extends StatelessWidget {
           title: const Text(
             'Twoje Konto',
             style: TextStyle(
-              color: textColor,
+              color: Colors.white, // Replace with your textColor
               fontSize: 24.0,
               fontWeight: FontWeight.w700,
             ),
           ),
         ),
         body: Container(
-          color: darkBackground,
+          color: darkBackground, // Replace with your darkBackground
           padding: const EdgeInsets.all(16.0),
           child: Column(
             children: [
               const CircleAvatar(
                 radius: 70,
-                child: Icon(Icons.person, size: 100, color: primaryColor),
+                child: Icon(Icons.person, size: 100, color: primaryColor), // Replace primaryColor as needed
               ),
               const SizedBox(height: 15),
               Card(
@@ -56,10 +56,10 @@ class AccountScreen extends StatelessWidget {
                 ),
                 elevation: 4,
                 child: ListTile(
-                  leading: const Icon(Icons.email, color: primaryColor),
+                  leading: const Icon(Icons.email, color: primaryColor), // Replace primaryColor as needed
                   title: Text(
                     user?.email ?? 'Brak danych',
-                    style: const TextStyle(fontSize: 18, color: textColor),
+                    style: const TextStyle(fontSize: 18, color: textColor), // Replace textColor as needed
                   ),
                 ),
               ),
@@ -93,21 +93,26 @@ class AccountScreen extends StatelessWidget {
                             icon: const Icon(Icons.delete),
                             label: const Text('Usuń konto'),
                             onPressed: () {
+                              // Capture the AccountBloc reference before opening the dialog
+                              final accountBloc = context.read<AccountBloc>();
+
                               showDialog(
                                 context: context,
-                                builder: (context) => AlertDialog(
+                                builder: (dialogContext) => AlertDialog(
                                   title: const Text('Potwierdzenie'),
-                                  content:
-                                      const Text('Czy na pewno chcesz usunąć konto? Ta operacja jest nieodwracalna.'),
+                                  content: const Text(
+                                    'Czy na pewno chcesz usunąć konto? Ta operacja jest nieodwracalna.',
+                                  ),
                                   actions: [
                                     TextButton(
-                                      onPressed: () => Navigator.of(context).pop(),
+                                      onPressed: () => Navigator.of(dialogContext).pop(),
                                       child: const Text('Anuluj'),
                                     ),
                                     TextButton(
                                       onPressed: () {
-                                        Navigator.of(context).pop();
-                                        context.read<AccountBloc>().add(AccountDeleteRequested());
+                                        Navigator.of(dialogContext).pop();
+                                        // Use the captured accountBloc instead of reading from context
+                                        accountBloc.add(AccountDeleteRequested());
                                       },
                                       child: const Text('Usuń'),
                                     ),
@@ -147,18 +152,27 @@ class AccountScreen extends StatelessWidget {
     final TextEditingController newPasswordController = TextEditingController();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Zmień hasło'),
         content: TextField(
           controller: newPasswordController,
           obscureText: true,
+          style: const TextStyle(
+            color: Colors.black, // Kolor tekstu wpisanego w polu
+          ),
           decoration: const InputDecoration(
             labelText: 'Nowe hasło',
+            labelStyle: TextStyle(
+              color: Colors.black, // Kolor tekstu etykiety
+            ),
+            filled: true,               // Włącza wypełnienie tła
+            fillColor: Colors.black12,  // Ustawia kolor tła pola (użyj Colors.black dla czystej czerni)
+            border: OutlineInputBorder(), // Opcjonalnie: ramka dla lepszej widoczności
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => Navigator.of(dialogContext).pop(),
             child: const Text('Anuluj'),
           ),
           TextButton(
@@ -179,7 +193,7 @@ class AccountScreen extends StatelessWidget {
                   );
                 }
               }
-              Navigator.of(context).pop();
+              Navigator.of(dialogContext).pop();
             },
             child: const Text('Zmień'),
           ),

@@ -23,6 +23,7 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
     on<RemoveDevice>(_onRemoveDevice);
     on<ToggleLed>(_onToggleLed);
     on<ToggleMotionSensor>(_onToggleMotionSensor);
+    on<ToggleDarknessSensor>(_ToggleDarknessSensor);
   }
 
   Future<void> _onLoadDevices(LoadDevices event, Emitter<DevicesState> emit) async {
@@ -145,6 +146,31 @@ class DevicesBloc extends Bloc<DevicesEvent, DevicesState> {
       }
     }
   }
+
+  Future<void> _ToggleDarknessSensor(ToggleDarknessSensor event, Emitter<DevicesState> emit) async {
+    if (state is DevicesLoaded) {
+      try {
+        print("_onToggleLed: $boardId");
+        await devicesRepository.toggleDarknessSensor(event.deviceId, event.newStatus);
+        await logsRepository.addLogEntry(LogEntry(
+          timestamp: DateTime.now(),
+          message: event.newStatus ? 'Włączono sensor zmierzchu: ${event.deviceName}' : 'Wyłączono sensor zmierzchu: ${event.deviceName} ' ,
+          device: 'Device',
+          boardId: boardId,
+          userId: userId,
+          severity: 'info',
+          status: event.newStatus ? 'on' : 'off',
+          eventType: event.newStatus ? 'sensor_on' : 'sensor_off',
+        ));
+        final devices = await devicesRepository.fetchDevices();
+        emit(DevicesLoaded(devices));
+      } catch (e) {
+        print('Error in _onToggleLed: $e');
+        emit(DevicesError(e.toString()));
+      }
+    }
+  }
+
 
   Future<void> _onToggleMotionSensor(ToggleMotionSensor event, Emitter<DevicesState> emit) async {
     if (state is DevicesLoaded) {

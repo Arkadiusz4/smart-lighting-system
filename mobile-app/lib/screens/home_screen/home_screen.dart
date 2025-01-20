@@ -7,6 +7,7 @@ import 'package:mobile_app/models/device.dart';
 import 'package:mobile_app/models/motion_sensor.dart';
 import 'package:mobile_app/repositories/devices_repository.dart';
 import 'package:mobile_app/repositories/logs_repository.dart';
+import 'package:mobile_app/screens/home_screen/switch_button.dart';
 import 'package:mobile_app/styles/color.dart';
 import 'package:mobile_app/screens/home_screen/led_switch.dart';
 import 'motion_sensor.dart';
@@ -125,7 +126,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           return Column(
                             children: state.devices.map((Device device) {
                               print(device.type);
-                              if (device.type.toLowerCase() == 'led') {
+                              if (device.type.toLowerCase() == 'led' ) {
                                 return ExpansionTile(
                                   leading: Icon(getDeviceIcon(device.type), color: primaryColor),
                                   title: Text(
@@ -152,7 +153,37 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ],
                                 );
-                              } else if (device.type.toLowerCase() == 'sensor ruchu') {
+                              }else if(device.type.toLowerCase() == 'czujnik zmierzchu') {
+                                return ExpansionTile(
+                                  leading: Icon(getDeviceIcon(device.type),
+                                      color: primaryColor),
+                                  title: Text(
+                                    device.name,
+                                    style: const TextStyle(
+                                      color: textColor,
+                                      fontSize: 16.0,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    'Port: ${device.port}, status: ${device
+                                        .status ?? 'off'}',
+                                    style: const TextStyle(
+                                      color: textColor,
+                                      fontSize: 14.0,
+                                      fontWeight: FontWeight.w400,
+                                    ),
+                                  ),
+                                  children: [
+                                    SwitchButton(
+                                      device: device,
+                                      userId: widget.userId,
+                                      devicesBloc: bloc,
+                                    ),
+                                  ],
+                                );
+                              }
+                              else if (device.type.toLowerCase() == 'sensor ruchu') {
                                 final int ledOnDuration =
                                     int.tryParse(device.extraFields?['led_on_duration']?.toString() ?? '') ?? 1000;
                                 final int pirCooldownTime =

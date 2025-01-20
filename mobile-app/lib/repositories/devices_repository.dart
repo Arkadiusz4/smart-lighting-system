@@ -103,6 +103,12 @@ class DevicesRepository {
     });
   }
 
+  Future<void> toggleDarknessSensor(String deviceId, bool status) async {
+    await _devicesCollection.doc(deviceId).update({
+      'status': status ? 'on' : 'off',
+    });
+  }
+
   Future<void> toggleMotionSensor(String deviceId, bool status) async {
     print("toggleMotionSense $deviceId $boardId");
     await _devicesCollection.doc(deviceId).update({

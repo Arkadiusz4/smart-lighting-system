@@ -58,6 +58,18 @@ class ToggleLed extends DevicesEvent {
   List<Object?> get props => [deviceId, newStatus, deviceName];
 }
 
+class ToggleDarknessSensor extends DevicesEvent {
+  final String deviceId;
+  final bool newStatus;
+  final String deviceName;
+
+  const ToggleDarknessSensor(this.deviceId, this.newStatus, this.deviceName);
+
+  @override
+  List<Object?> get props => [deviceId, newStatus, deviceName];
+}
+
+
 class ToggleMotionSensor extends DevicesEvent {
   final String deviceId;
   final bool newStatus;

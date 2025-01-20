@@ -22,6 +22,18 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   String? _scannedBoardId;
   late String  clientId;
   String? mqttPassword;
+  bool isButtonEnabled = false;
+
+
+  Future<void> checkCentralDeviceStatus() async {
+    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
+    if (userId.isNotEmpty) {
+      final result = await isCentralDeviceAdded(userId);
+      setState(() {
+        isButtonEnabled = result; // Enable the button if the function returns true
+      });
+    }
+  }
 
   final List<String> _rooms = [
     'Salon',
@@ -36,6 +48,7 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   @override
   void initState() {
     super.initState();
+    checkCentralDeviceStatus();
     _selectedRoom = _rooms.first;
     _scannedBoardId = '';
   }
@@ -225,32 +238,15 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                 ),
               ),
             ),
-            FutureBuilder<bool>(
-              future: isCentralDeviceAdded(userId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const CircularProgressIndicator();
-                } else if (snapshot.hasError) {
-                  return Text(
-                    'Błąd: ${snapshot.error}',
-                    style: const TextStyle(color: Colors.red),
-                  );
-                } else if (snapshot.hasData && snapshot.data == true) {
-                  return ElevatedButton.icon(
-                    onPressed: _addPeripheral,
-                    icon: const Icon(Icons.add),
-                    label: const Text(
-                      'Dodaj urządzenie peripheral',
-                      style: TextStyle(
-                        fontSize: 16.0,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  );
-                } else {
-                  return const SizedBox.shrink();
-                }
-              },
+            ElevatedButton.icon(
+              onPressed: isButtonEnabled ? _addPeripheral : null,
+              label: const Text(
+                'Dodaj urządzenie peripheral',
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
             const SizedBox(height: 20.0),
             Text(

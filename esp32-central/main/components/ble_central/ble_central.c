@@ -17,10 +17,16 @@ static esp_mqtt_client_handle_t mqtt_client = NULL;
 
 #define REMOTE_SERVICE_UUID 0x00FF
 #define REMOTE_CHAR_UUID 0xFF01
+#define REMOTE_CHAR_UUID2 0xFF02
+
+extern esp_gatt_if_t gattc_if_global;
+extern uint16_t conn_id_global;
+extern bool manual_disconnect;
 
 static bool connect = false;
 static bool get_server = false;
 uint16_t char_handle_global = 0;
+static uint16_t char_handle_sensor = 0;
 
 static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t *param);
 
@@ -68,6 +74,31 @@ esp_err_t ble_central_write_led(const char *cmd) {
     ESP_LOGI(TAG, "Write LED: %s (err=%s)", cmd, esp_err_to_name(err));
     return err;
 }
+
+esp_err_t ble_central_write_darkness_sensor(const char *cmd) {
+    if (!connected) {
+        ESP_LOGW(TAG, "Not connected");
+        return ESP_FAIL;
+    }
+    if (char_handle_sensor == 0) {
+        ESP_LOGW(TAG, "No characteristic handle found for darkness sensor");
+        return ESP_FAIL;
+    }
+    size_t cmd_len = strlen(cmd);
+    if (cmd_len > 20)
+        cmd_len = 20;
+    esp_err_t err = esp_ble_gattc_write_char(
+            gattc_if_global,
+            conn_id_global,
+            char_handle_sensor,
+            cmd_len,
+            (uint8_t *) cmd,
+            ESP_GATT_WRITE_TYPE_RSP,
+            ESP_GATT_AUTH_REQ_NONE);
+    ESP_LOGI(TAG, "Write darkness sensor: %s (err=%s)", cmd, esp_err_to_name(err));
+    return err;
+}
+
 
 static void led_toggle_task(void *pv) {
     while (1) {
@@ -164,7 +195,7 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
             }
             if (gl_profile_tab[PROFILE_APP_ID].service_start_handle != 0 &&
                 gl_profile_tab[PROFILE_APP_ID].service_end_handle != 0) {
-                ESP_LOGI(TAG, "Searching for characteristic...");
+                ESP_LOGI(TAG, "Searching for characteristics...");
                 uint16_t count = 0;
                 esp_gatt_status_t status = esp_ble_gattc_get_attr_count(gattc_if,
                                                                         conn_id_global,
@@ -181,25 +212,41 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
                     if (!char_elem_result) {
                         ESP_LOGE(TAG, "No memory to allocate char_elem_result");
                     } else {
-                        esp_bt_uuid_t char_uuid;
-                        char_uuid.len = ESP_UUID_LEN_16;
-                        char_uuid.uuid.uuid16 = REMOTE_CHAR_UUID;
+                        esp_bt_uuid_t uuid_led, uuid_sensor;
+                        uuid_led.len = ESP_UUID_LEN_16;
+                        uuid_led.uuid.uuid16 = REMOTE_CHAR_UUID;
+
+                        uuid_sensor.len = ESP_UUID_LEN_16;
+                        uuid_sensor.uuid.uuid16 = REMOTE_CHAR_UUID2;
+
                         status = esp_ble_gattc_get_char_by_uuid(gattc_if,
                                                                 conn_id_global,
                                                                 gl_profile_tab[PROFILE_APP_ID].service_start_handle,
                                                                 gl_profile_tab[PROFILE_APP_ID].service_end_handle,
-                                                                char_uuid,
+                                                                uuid_led,
                                                                 char_elem_result,
                                                                 &count);
-                        if (status != ESP_GATT_OK) {
-                            ESP_LOGE(TAG, "esp_ble_gattc_get_char_by_uuid error");
-                        }
-                        if (count > 0 && char_elem_result != NULL) {
+                        if (status == ESP_GATT_OK && count > 0 && char_elem_result != NULL) {
                             char_handle_global = char_elem_result[0].char_handle;
-                            ESP_LOGI(TAG, "Characteristic found, handle: %d", char_handle_global);
+                            ESP_LOGI(TAG, "LED Characteristic found, handle: %d", char_handle_global);
                         } else {
-                            ESP_LOGE(TAG, "Characteristic not found");
+                            ESP_LOGE(TAG, "LED Characteristic not found");
                         }
+
+                        status = esp_ble_gattc_get_char_by_uuid(gattc_if,
+                                                                conn_id_global,
+                                                                gl_profile_tab[PROFILE_APP_ID].service_start_handle,
+                                                                gl_profile_tab[PROFILE_APP_ID].service_end_handle,
+                                                                uuid_sensor,
+                                                                char_elem_result,
+                                                                &count);
+                        if (status == ESP_GATT_OK && count > 0 && char_elem_result != NULL) {
+                            char_handle_sensor = char_elem_result[0].char_handle;
+                            ESP_LOGI(TAG, "Darkness Sensor Characteristic found, handle: %d", char_handle_sensor);
+                        } else {
+                            ESP_LOGE(TAG, "Darkness Sensor Characteristic not found");
+                        }
+
                         free(char_elem_result);
                     }
                 } else {
@@ -224,15 +271,19 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
             get_server = false;
             connected = false;
 
-            esp_err_t ret = esp_ble_gap_set_scan_params(&ble_scan_params);
-            if (ret != ESP_OK) {
-                ESP_LOGE(TAG, "Failed to set scan parameters: %s", esp_err_to_name(ret));
-            }
-
-            ESP_LOGI(TAG, "Disconnected, restarting scan");
-            ret = esp_ble_gap_start_scanning(60);
-            if (ret != ESP_OK) {
-                ESP_LOGE(TAG, "Failed to start scanning: %s", esp_err_to_name(ret));
+            if (!manual_disconnect) {
+                esp_err_t ret = esp_ble_gap_set_scan_params(&ble_scan_params);
+                if (ret != ESP_OK) {
+                    ESP_LOGE(TAG, "Failed to set scan parameters: %s", esp_err_to_name(ret));
+                }
+                ESP_LOGI(TAG, "Disconnected, restarting scan");
+                ret = esp_ble_gap_start_scanning(60);
+                if (ret != ESP_OK) {
+                    ESP_LOGE(TAG, "Failed to start scanning: %s", esp_err_to_name(ret));
+                }
+            } else {
+                ESP_LOGI(TAG, "Manual disconnect – not restarting scan.");
+                manual_disconnect = false;
             }
             break;
         default:

@@ -2,9 +2,12 @@
 #define BOARD_MANAGER_H
 
 #include "esp_err.h"
+#include <stdbool.h>
 
 extern char s_board_id[32];
 extern char remote_device_name[32];
+
+extern bool manual_disconnect;
 
 void save_board_id(const char *board_id);
 

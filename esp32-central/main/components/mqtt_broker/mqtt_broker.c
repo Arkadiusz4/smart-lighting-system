@@ -1,6 +1,7 @@
 #include "mqtt_broker.h"
 #include <stddef.h>
 #include "esp_event.h"
+#include "gatt_client.h"
 #include "mqtt_manager.h"
 #include "device_control.h"
 #include "esp_log.h"
@@ -9,11 +10,13 @@
 #include "board_manager.h"
 #include "ble_central.h"
 #include "esp_gap_ble_api.h"
+#include "nvs_flash.h"
 
 #define TAG "MQTT_CLIENT"
 
 static esp_mqtt_client_handle_t client;
 static bool mqtt_connected = false;
+extern bool manual_disconnect;
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     esp_mqtt_event_handle_t event = (esp_mqtt_event_handle_t) event_data;
@@ -55,6 +58,32 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
             } else if (strncmp(incoming_topic, "central/command/led_off", strlen("central/command/led_off")) == 0) {
                 ESP_LOGI(TAG, "MQTT command 'led_off' received");
                 ble_central_write_led("off");
+            } else if (strncmp(incoming_topic, "central/command/darkness_sensor_on",
+                               strlen("central/command/darkness_sensor_on")) == 0) {
+                ESP_LOGI(TAG, "MQTT command 'darkness_sensor_on' received");
+                ble_central_write_darkness_sensor("on");
+            } else if (strncmp(incoming_topic, "central/command/darkness_sensor_off",
+                               strlen("central/command/darkness_sensor_off")) == 0) {
+                ESP_LOGI(TAG, "MQTT command 'darkness_sensor_off' received");
+                ble_central_write_darkness_sensor("off");
+            } else if (strncmp(incoming_topic, "central/command/reset", strlen("central/command/reset")) == 0) {
+                ESP_LOGI(TAG, "MQTT command 'reset' received");
+                esp_err_t err = nvs_flash_erase();
+                if (err == ESP_OK) {
+                    ESP_LOGI(TAG, "Flash erased, restarting...");
+                    esp_restart();
+                } else {
+                    ESP_LOGE(TAG, "Failed to erase flash: %s", esp_err_to_name(err));
+                }
+            } else if (strncmp(incoming_topic, "central/command/peripheral_disconnect",
+                               strlen("central/command/peripheral_disconnect")) == 0) {
+                ESP_LOGI(TAG, "MQTT command 'peripheral_disconnect' received");
+                manual_disconnect = true;
+
+                if (connected) {
+                    esp_ble_gattc_close(gattc_if_global, conn_id_global);
+                    ESP_LOGI(TAG, "Disconnected from peripheral");
+                }
             }
 
             free(incoming_topic);
@@ -79,7 +108,6 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 free(payload_str);
                 break;
             }
-
 
             cJSON *json = cJSON_Parse(payload_str);
             if (json == NULL) {

@@ -5,6 +5,8 @@
 char s_board_id[32] = "defaultBoardId";
 char remote_device_name[32] = "defaultDeviceName";
 
+bool manual_disconnect = false;
+
 esp_err_t save_board_id(const char *board_id) {
     nvs_handle_t nvs_handle;
     esp_err_t err = nvs_open("storage", NVS_READWRITE, &nvs_handle);

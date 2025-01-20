@@ -183,7 +183,6 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
                     } else if (strcasecmp(data, "off") == 0) {
                         photoresistor_enabled = false;
                         ESP_LOGI(TAG, "Fotorezystor WYŁĄCZONY");
-                        gpio_set_level(LED_GPIO_PIN, 0);
                     } else {
                         ESP_LOGW(TAG, "Nieznane polecenie dla fotorezystora: %s", data);
                     }

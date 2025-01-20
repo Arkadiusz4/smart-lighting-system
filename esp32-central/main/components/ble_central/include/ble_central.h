@@ -7,4 +7,6 @@ esp_err_t ble_central_init(void);
 
 esp_err_t ble_central_write_led(const char *cmd);
 
+esp_err_t ble_central_write_darkness_sensor(const char *cmd);
+
 #endif // BLE_CENTRAL_H

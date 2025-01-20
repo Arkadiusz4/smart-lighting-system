@@ -1,3 +1,4 @@
+import threading
 import time
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -20,7 +21,14 @@ mqtt_user_manager = MQTTUserManager(PASSWORD_FILE)
 acl_manager = ACLManager(ACL_FILE)
 
 firebase_mqtt_listener = FirebaseMQTTListener(db, mqtt_user_manager, acl_manager)
+
 firebase_mqtt_listener.start_listening("mqtt_clients")
+
+heartbeat_thread = threading.Thread(
+    target=firebase_mqtt_listener.monitor_heartbeats,
+    daemon=True
+)
+heartbeat_thread.start()
 
 
 def on_connect(client, userdata, flags, rc):
@@ -43,7 +51,7 @@ BROKER_ADDRESS = "192.168.0.145"
 BROKER_PORT = 2137
 
 mqtt_client = mqtt.Client()
-creds_doc = db.collection("mqtt_clients").document("some_doc_id").get()
+creds_doc = db.collection("mqtt_clients").document().get()
 if creds_doc.exists:
     creds_data = creds_doc.to_dict()
     username = creds_data.get("userId")

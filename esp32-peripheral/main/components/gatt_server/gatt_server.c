@@ -9,12 +9,19 @@
 #define TAG "GATT_SERVER"
 #define DEVICE_NAME "ESP32-C3-BLE"
 #define GATTS_APP_ID 0
+#define LED_GPIO_PIN GPIO_NUM_6
+#define PHOTORESISTOR_ADC_CHANNEL ADC1_CHANNEL_0
+#define LIGHT_THRESHOLD 2000
 
-#define GATTS_SERVICE_UUID   0x00FF
-#define GATTS_CHAR_UUID      0xFF01
-#define GATTS_NUM_HANDLE     4
+#define GATTS_SERVICE_UUID 0x00FF
+#define GATTS_CHAR_UUID 0xFF01
+#define GATTS_CHAR_UUID_PHOTORESISTOR 0xFF02
+#define GATTS_NUM_HANDLE 8
 
 extern esp_ble_adv_params_t adv_params;
+bool ble_led_active = false;
+bool photoresistor_enabled = false;
+static uint16_t char_handle_photoresistor = 0;
 
 static uint16_t service_handle = 0;
 static esp_gatt_srvc_id_t service_id = {
@@ -30,7 +37,10 @@ static esp_bt_uuid_t char_uuid = {
         .uuid = {.uuid16 = GATTS_CHAR_UUID},
 };
 
-#define LED_GPIO_PIN 6
+static esp_bt_uuid_t char_uuid_photoresistor = {
+        .len = ESP_UUID_LEN_16,
+        .uuid = {.uuid16 = GATTS_CHAR_UUID_PHOTORESISTOR},
+};
 
 static void gatts_event_handler(esp_gatts_cb_event_t event,
                                 esp_gatt_if_t gatts_if,
@@ -80,7 +90,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
                     .include_txpower = false,
                     .min_interval = 0x0006,
                     .max_interval = 0x0010,
-                    .appearance   = 0x00,
+                    .appearance = 0x00,
                     .manufacturer_len = 0,
                     .p_manufacturer_data = NULL,
                     .service_data_len = 0,
@@ -110,28 +120,41 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
                     &char_uuid,
                     ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
                     ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
-                    NULL, NULL
-            );
+                    NULL, NULL);
             if (ret) {
-                ESP_LOGE(TAG, "Dodanie charakterystyki nie powiodło się: %s", esp_err_to_name(ret));
+                ESP_LOGE(TAG, "Dodanie charakterystyki LED nie powiodło się: %s", esp_err_to_name(ret));
+            }
+
+            ret = esp_ble_gatts_add_char(
+                    service_handle,
+                    &char_uuid_photoresistor,
+                    ESP_GATT_PERM_READ | ESP_GATT_PERM_WRITE,
+                    ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE,
+                    NULL, NULL);
+            if (ret) {
+                ESP_LOGE(TAG, "Dodanie charakterystyki Photoresistor nie powiodło się: %s", esp_err_to_name(ret));
             }
             break;
         }
-        case ESP_GATTS_ADD_CHAR_EVT: {
-            ESP_LOGI(TAG, "Charakterystyka dodana, uuid 0x%X, handle %d",
-                     param->add_char.char_uuid.uuid.uuid16,
-                     param->add_char.attr_handle);
-            char_handle = param->add_char.attr_handle;
 
-            ret = esp_ble_gatts_start_service(service_handle);
-            if (ret) {
-                ESP_LOGE(TAG, "Uruchomienie serwisu nie powiodło się: %s", esp_err_to_name(ret));
+        case ESP_GATTS_ADD_CHAR_EVT: {
+            uint16_t uuid = param->add_char.char_uuid.uuid.uuid16;
+            ESP_LOGI(TAG, "Charakterystyka dodana, uuid 0x%X, handle %d", uuid, param->add_char.attr_handle);
+
+            if (uuid == GATTS_CHAR_UUID) {
+                char_handle = param->add_char.attr_handle;
+            } else if (uuid == GATTS_CHAR_UUID_PHOTORESISTOR) {
+                char_handle_photoresistor = param->add_char.attr_handle;
+                ret = esp_ble_gatts_start_service(service_handle);
+                if (ret) {
+                    ESP_LOGE(TAG, "Uruchomienie serwisu nie powiodło się: %s", esp_err_to_name(ret));
+                }
             }
             break;
         }
 
         case ESP_GATTS_WRITE_EVT: {
-            if (param->write.handle == char_handle && param->write.len > 0) {
+            if (param->write.len > 0) {
                 char data[32] = {0};
                 int len = param->write.len;
                 if (len >= (int) sizeof(data)) {
@@ -139,16 +162,31 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
                 }
                 memcpy(data, param->write.value, len);
                 data[len] = '\0';
-                ESP_LOGI(TAG, "Wartosc zapisu: %s", data);
+                ESP_LOGI(TAG, "Wartość zapisu: %s", data);
 
-                if (strcasecmp(data, "on") == 0) {
-                    gpio_set_level(LED_GPIO_PIN, 1);
-                    ESP_LOGI(TAG, "LED ON na GPIO=%d", LED_GPIO_PIN);
-                } else if (strcasecmp(data, "off") == 0) {
-                    gpio_set_level(LED_GPIO_PIN, 0);
-                    ESP_LOGI(TAG, "LED OFF na GPIO=%d", LED_GPIO_PIN);
-                } else {
-                    ESP_LOGW(TAG, "Nieznane polecenie: %s", data);
+                if (param->write.handle == char_handle) {
+                    if (strcasecmp(data, "on") == 0) {
+                        gpio_set_level(LED_GPIO_PIN, 1);
+                        ble_led_active = true;
+                        ESP_LOGI(TAG, "LED ON na GPIO=%d", LED_GPIO_PIN);
+                    } else if (strcasecmp(data, "off") == 0) {
+                        gpio_set_level(LED_GPIO_PIN, 0);
+                        ble_led_active = false;
+                        ESP_LOGI(TAG, "LED OFF na GPIO=%d", LED_GPIO_PIN);
+                    } else {
+                        ESP_LOGW(TAG, "Nieznane polecenie dla LED: %s", data);
+                    }
+                } else if (param->write.handle == char_handle_photoresistor) {
+                    if (strcasecmp(data, "on") == 0) {
+                        photoresistor_enabled = true;
+                        ESP_LOGI(TAG, "Fotorezystor WŁĄCZONY");
+                    } else if (strcasecmp(data, "off") == 0) {
+                        photoresistor_enabled = false;
+                        ESP_LOGI(TAG, "Fotorezystor WYŁĄCZONY");
+                        gpio_set_level(LED_GPIO_PIN, 0);
+                    } else {
+                        ESP_LOGW(TAG, "Nieznane polecenie dla fotorezystora: %s", data);
+                    }
                 }
 
                 if (param->write.need_rsp) {
@@ -165,6 +203,7 @@ static void gatts_event_handler(esp_gatts_cb_event_t event,
             }
             break;
         }
+
         case ESP_GATTS_CONNECT_EVT:
             ESP_LOGI(TAG, "BLE polaczono, conn_id %d", param->connect.conn_id);
             break;

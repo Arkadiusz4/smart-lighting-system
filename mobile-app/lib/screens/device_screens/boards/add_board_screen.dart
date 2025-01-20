@@ -23,17 +23,42 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   late String  clientId;
   String? mqttPassword;
   bool isButtonEnabled = false;
+  String boardName = '';
+  String boardRoom = '';
 
+
+  @override
+  void initState() {
+    super.initState();
+    checkCentralDeviceStatus();
+    _selectedRoom = _rooms.first;
+    _scannedBoardId = '';
+  }
 
   Future<void> checkCentralDeviceStatus() async {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     if (userId.isNotEmpty) {
       final result = await isCentralDeviceAdded(userId);
-      setState(() {
-        isButtonEnabled = result; // Enable the button if the function returns true
-      });
+      if (result) {
+        final name = await getCentralDeviceName(userId);
+        final room = await getCentralDeviceRoom(userId);
+
+        setState(() {
+          isButtonEnabled = result;
+          boardName = name;
+          boardRoom = room;
+          _nameController.text = name; // Set the controller's text directly
+          _selectedRoom = _rooms.contains(room) ? room : _rooms.first;
+        });
+      } else {
+        setState(() {
+          isButtonEnabled = false;
+          _nameController.text = ''; // Clear text if no central device
+        });
+      }
     }
   }
+
 
   final List<String> _rooms = [
     'Salon',
@@ -45,13 +70,6 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
     'Inne',
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    checkCentralDeviceStatus();
-    _selectedRoom = _rooms.first;
-    _scannedBoardId = '';
-  }
 
   @override
   void dispose() {
@@ -106,11 +124,64 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
       ),
     );
   }
+
+  Future<String> getCentralDeviceName(String userId) async{
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final snapshot = await firestore
+          .collection('boards')
+          .where('assigned_to', isEqualTo: userId)
+          .where('peripheral', isEqualTo: false)
+          .limit(1)
+          .get();
+      if (snapshot.docs.isNotEmpty){
+        final data = snapshot.docs.first.data();
+        print(data);
+        print(data['name']);
+        return data['name'];
+      }
+      else{
+        return '';
+      }
+    }
+
+
+    catch (e) {
+      print('Błąd podczas pobierania danych MQTT: $e');
+      return '';
+    }
+  }
+
+
+  Future<String> getCentralDeviceRoom(String userId) async{
+    try {
+      final firestore = FirebaseFirestore.instance;
+      final snapshot = await firestore
+          .collection('boards')
+          .where('assigned_to', isEqualTo: userId)
+          .where('peripheral', isEqualTo: false)
+          .limit(1)
+          .get();
+      if (snapshot.docs.isNotEmpty){
+        final data = snapshot.docs.first.data();
+        return data['room'];
+      }
+      else{
+        return '';
+      }
+    }
+
+
+    catch (e) {
+    print('Błąd podczas pobierania danych MQTT: $e');
+    return '';
+    }
+  }
+
   Future<bool> isCentralDeviceAdded(String userId) async{
     try{
-      print("Inside this");
       final firestore = FirebaseFirestore.instance;
-      print(userId);
+
       final snapshot = await firestore
           .collection('boards')
           .where('assigned_to', isEqualTo: userId)
@@ -120,7 +191,7 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
 
       if (snapshot.docs.isNotEmpty){
         final data = snapshot.docs.first.data();
-        print(data);
+
         return true;
       }
       else{
@@ -182,19 +253,22 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
         child: Column(
           children: [
             TextField(
-              controller: _nameController,
+              controller: _nameController..text = boardName ?? '',
               style: const TextStyle(
                 color: textColor,
                 fontSize: 18.0,
                 fontWeight: FontWeight.w600,
               ),
-              decoration: const InputDecoration(
+              enabled: boardName == null || boardName.isEmpty, // Disable if boardName is set
+              decoration: InputDecoration(
                 labelText: 'Nazwa urządzenia',
-                labelStyle: TextStyle(
+                labelStyle: const TextStyle(
                   color: textColor,
                   fontSize: 15.0,
                   fontWeight: FontWeight.w300,
                 ),
+                // Display hint or info when the field is disabled
+                helperText: boardName == null || boardName.isEmpty ? null : 'Nazwa jest ustawiona.',
               ),
             ),
             const SizedBox(height: 16.0),
@@ -205,14 +279,15 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                 fontWeight: FontWeight.w600,
               ),
               dropdownColor: Colors.indigo,
-              value: _selectedRoom,
-              decoration: const InputDecoration(
+              value: _rooms.contains(boardRoom) ? boardRoom : _selectedRoom, // Ensure the value is valid
+              decoration: InputDecoration(
                 labelText: 'Pokój',
-                labelStyle: TextStyle(
+                labelStyle: const TextStyle(
                   color: textColor,
                   fontSize: 15.0,
                   fontWeight: FontWeight.w300,
                 ),
+                helperText: boardRoom == null || boardRoom.isEmpty ? null : 'Pokój jest ustawiony.',
               ),
               items: _rooms.map((room) {
                 return DropdownMenuItem(
@@ -220,13 +295,17 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                   child: Text(room),
                 );
               }).toList(),
-              onChanged: (value) {
+              onChanged: (boardRoom == null || boardRoom.isEmpty)
+                  ? (value) {
                 setState(() {
                   _selectedRoom = value;
                 });
-              },
+              }
+                  : null, // Disable changes if boardRoom is set
             ),
             const SizedBox(height: 50.0),
+            !isButtonEnabled
+                ?
             ElevatedButton.icon(
               onPressed: _scanQRCode,
               icon: const Icon(Icons.qr_code_scanner),
@@ -237,9 +316,9 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
+            ):
             ElevatedButton.icon(
-              onPressed: isButtonEnabled ? _addPeripheral : null,
+              onPressed: _addPeripheral ,
               label: const Text(
                 'Dodaj urządzenie peripheral',
                 style: TextStyle(
@@ -249,7 +328,7 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
               ),
             ),
             const SizedBox(height: 20.0),
-            Text(
+            if (!isButtonEnabled) Text(
               _scannedBoardId != null && _scannedBoardId!.isNotEmpty
                   ? 'Zeskanowany Board ID: $_scannedBoardId'
                   : 'Brak zeskanowanego Board ID',

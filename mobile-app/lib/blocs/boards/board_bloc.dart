@@ -4,7 +4,6 @@ import 'package:mobile_app/blocs/boards/board_state.dart';
 import 'package:mobile_app/models/log_entry.dart';
 import 'package:mobile_app/repositories/boards_repository.dart';
 import 'package:mobile_app/repositories/logs_repository.dart';
-import 'package:mobile_app/screens/device_screens/boards/peripheral_configuration_screen.dart';
 
 class BoardsBloc extends Bloc<BoardsEvent, BoardsState> {
   final BoardsRepository boardsRepository;

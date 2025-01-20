@@ -74,7 +74,7 @@ class DevicesListScreen extends StatelessWidget {
                       ),
                     ),
 
-                    trailing:  this.isPeripheral == false ? Row(
+                    trailing:  isPeripheral == false ? Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(

@@ -26,10 +26,10 @@ class LogIconHelper {
     }
 
     if (log.device == 'Network') {
-      if (log.wifiStatus == 'no_wifi') {
-        return Icons.signal_wifi_off;
-      } else if (log.wifiStatus == 'connected') {
+      if (log.eventType == 'wifi_connected') {
         return Icons.wifi;
+      } else if (log.wifiStatus == 'wifi_disconnected') {
+        return Icons.wifi_off;
       }
     }
     if (log.device == 'Device') {
@@ -44,6 +44,13 @@ class LogIconHelper {
         return Icons.directions_run;
       } else if (log.eventType == 'motion_sensor_off') {
         return Icons.sensors_off;
+      }
+    }
+    if (log.device == 'Network') {
+      if (log.eventType == 'connection_lost') {
+        return Icons.wifi_tethering_off;
+      } else if (log.eventType == 'connection_restored') {
+        return Icons.wifi_tethering;
       }
     }
     return Icons.device_unknown;
@@ -66,10 +73,10 @@ class LogIconHelper {
     }
 
     if (log.device == 'Network') {
-      if (log.wifiStatus == 'no_wifi') {
-        return Colors.red;
-      } else if (log.wifiStatus == 'connected') {
+      if (log.eventType == 'wifi_connected') {
         return Colors.green;
+      } else if (log.wifiStatus == 'wifi_disconnected') {
+        return Colors.red;
       }
     }
     if (log.device == 'Device') {

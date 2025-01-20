@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/blocs/boards/board_event.dart';
-import 'package:mobile_app/blocs/devices/devices_bloc.dart';
-import 'package:mobile_app/blocs/devices/devices_event.dart';
 import 'package:mobile_app/styles/color.dart';
 
 import '../../../models/device.dart';

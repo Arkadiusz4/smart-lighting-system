@@ -123,7 +123,7 @@ class DevicesScreen extends StatelessWidget {
                                   TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
-                                      devicesBloc.add(RemoveBoard(board.boardId,userId, board.name, board.peripheral));
+                                      devicesBloc.add(RemoveBoard(board.boardId, userId, board.name, board.peripheral));
                                     },
                                     child: const Text(
                                       "Tak",
@@ -146,7 +146,11 @@ class DevicesScreen extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => DevicesListScreen(userId: userId, boardId: board.boardId,  isPeripheral: board.peripheral),
+                        builder: (_) => DevicesListScreen(
+                          userId: userId,
+                          boardId: board.boardId,
+                          isPeripheral: board.peripheral,
+                        ),
                       ),
                     );
                   },

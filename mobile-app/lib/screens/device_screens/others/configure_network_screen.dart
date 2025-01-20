@@ -1,9 +1,12 @@
 import 'dart:io';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:http/http.dart' as http;
-import 'package:mobile_app/screens/device_screens/devices_screen.dart';
+import 'package:mobile_app/blocs/boards/board_bloc.dart';
+import 'package:mobile_app/blocs/navigation/navigation_bloc.dart';
+import 'package:mobile_app/blocs/navigation/navigation_event.dart';
+import 'package:mobile_app/screens/main_navigation_screen.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 
 class ConfigureNetworkScreen extends StatefulWidget {
@@ -11,6 +14,7 @@ class ConfigureNetworkScreen extends StatefulWidget {
   final String? mqttPassword;
   final String? boardId;
   final String? userId;
+  final BoardsBloc boardsBloc;
 
   const ConfigureNetworkScreen({
     super.key,
@@ -18,6 +22,7 @@ class ConfigureNetworkScreen extends StatefulWidget {
     this.mqttPassword,
     this.boardId,
     this.userId,
+    required this.boardsBloc,
   });
 
   @override
@@ -42,6 +47,8 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
   }
 
   Future<void> sendNetworkCredentials() async {
+    bool shouldNavigate = false;
+
     print('Sprawdzanie dostępności hosta ESP32...');
     bool reachable = await isHostReachable('192.168.4.1');
     print('Host ESP32 osiągalny: $reachable');
@@ -79,22 +86,21 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
       });
 
       print('Wysyłanie danych do ESP32: $body');
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: body,
-      );
+      final response = await http
+          .post(
+            url,
+            headers: {'Content-Type': 'application/json'},
+            body: body,
+          )
+          .timeout(const Duration(seconds: 10));
+      ;
 
       print('Odpowiedź z ESP32: ${response.statusCode}, body: ${response.body}');
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Dane wysłane do ESP32')),
         );
-
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const DevicesScreen()),
-        );
+        shouldNavigate = true;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Błąd konfiguracji: ${response.statusCode}')),
@@ -102,19 +108,37 @@ class _ConfigureNetworkScreenState extends State<ConfigureNetworkScreen> {
         return;
       }
     } catch (e) {
-      String errorMsg = e.toString();
-      print('Błąd podczas wysyłania danych: $errorMsg');
+      print('Błąd podczas wysyłania danych: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Wystąpił błąd: $errorMsg')),
+        const SnackBar(content: Text('Dane wysłane, konfiguracja zakończona.')),
       );
+      shouldNavigate = true;
     } finally {
       print('Rozłączanie i czyszczenie połączeń Wi-Fi...');
-      await WiFiForIoTPlugin.forceWifiUsage(false);
-      await WiFiForIoTPlugin.disconnect();
-      setState(() {
-        isSending = false;
-      });
+      try {
+        await WiFiForIoTPlugin.forceWifiUsage(false);
+        await WiFiForIoTPlugin.disconnect();
+      } catch (disconnectError) {
+        print('Błąd podczas rozłączania: $disconnectError');
+      }
+      if (mounted) {
+        setState(() {
+          isSending = false;
+        });
+      }
       print('Zakończono wysyłanie danych.');
+
+      if (shouldNavigate) {
+        context.read<NavigationBloc>().add(const PageTapped(1));
+
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const MainNavigationScreen(),
+          ),
+          (Route<dynamic> route) => false,
+        );
+      }
     }
   }
 

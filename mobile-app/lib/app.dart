@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/auth/auth_bloc.dart';
@@ -31,6 +32,13 @@ class MyApp extends StatelessWidget {
           ),
           BlocProvider(
             create: (context) => NavigationBloc(),
+          ),
+          BlocProvider(
+            create: (context) => BoardsBloc(
+              boardsRepository: _boardsRepository,
+              logsRepository: LogsRepository(),
+              userId: FirebaseAuth.instance.currentUser?.uid ?? '',
+            )..add(LoadBoards()),
           ),
         ],
         child: MaterialApp(
@@ -69,14 +77,7 @@ class MyApp extends StatelessWidget {
               print('app.dart: Current AuthState: $state');
               if (state is AuthAuthenticated) {
                 print('app.dart: User is authenticated: ${state.user.email}');
-                return BlocProvider(
-                  create: (context) => BoardsBloc(
-                    boardsRepository: _boardsRepository,
-                    logsRepository: LogsRepository(),
-                    userId: state.user.uid,
-                  )..add(LoadBoards()),
-                  child: const MainNavigationScreen(),
-                );
+                return const MainNavigationScreen();
               } else if (state is AuthLoading) {
                 return const Scaffold(
                   body: Center(child: CircularProgressIndicator()),

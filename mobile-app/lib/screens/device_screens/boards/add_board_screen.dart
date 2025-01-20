@@ -20,12 +20,11 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
   final TextEditingController _nameController = TextEditingController();
   String? _selectedRoom;
   String? _scannedBoardId;
-  late String  clientId;
+  late String clientId;
   String? mqttPassword;
   bool isButtonEnabled = false;
   String boardName = '';
   String boardRoom = '';
-
 
   @override
   void initState() {
@@ -59,7 +58,6 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
     }
   }
 
-
   final List<String> _rooms = [
     'Salon',
     'Sypialnia',
@@ -69,7 +67,6 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
     'Korytarz',
     'Inne',
   ];
-
 
   @override
   void dispose() {
@@ -125,7 +122,7 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
     );
   }
 
-  Future<String> getCentralDeviceName(String userId) async{
+  Future<String> getCentralDeviceName(String userId) async {
     try {
       final firestore = FirebaseFirestore.instance;
       final snapshot = await firestore
@@ -134,26 +131,21 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
           .where('peripheral', isEqualTo: false)
           .limit(1)
           .get();
-      if (snapshot.docs.isNotEmpty){
+      if (snapshot.docs.isNotEmpty) {
         final data = snapshot.docs.first.data();
         print(data);
         print(data['name']);
         return data['name'];
-      }
-      else{
+      } else {
         return '';
       }
-    }
-
-
-    catch (e) {
+    } catch (e) {
       print('Błąd podczas pobierania danych MQTT: $e');
       return '';
     }
   }
 
-
-  Future<String> getCentralDeviceRoom(String userId) async{
+  Future<String> getCentralDeviceRoom(String userId) async {
     try {
       final firestore = FirebaseFirestore.instance;
       final snapshot = await firestore
@@ -162,24 +154,20 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
           .where('peripheral', isEqualTo: false)
           .limit(1)
           .get();
-      if (snapshot.docs.isNotEmpty){
+      if (snapshot.docs.isNotEmpty) {
         final data = snapshot.docs.first.data();
         return data['room'];
-      }
-      else{
+      } else {
         return '';
       }
-    }
-
-
-    catch (e) {
-    print('Błąd podczas pobierania danych MQTT: $e');
-    return '';
+    } catch (e) {
+      print('Błąd podczas pobierania danych MQTT: $e');
+      return '';
     }
   }
 
-  Future<bool> isCentralDeviceAdded(String userId) async{
-    try{
+  Future<bool> isCentralDeviceAdded(String userId) async {
+    try {
       final firestore = FirebaseFirestore.instance;
 
       final snapshot = await firestore
@@ -189,23 +177,18 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
           .limit(1)
           .get();
 
-      if (snapshot.docs.isNotEmpty){
+      if (snapshot.docs.isNotEmpty) {
         final data = snapshot.docs.first.data();
 
         return true;
-      }
-      else{
+      } else {
         print("Returning false");
         return false;
       }
-    }
-
-    catch (e) {
+    } catch (e) {
       print('Błąd podczas pobierania danych MQTT: $e');
       return false;
     }
-
-
   }
 
   Future<void> fetchMqttData(String boardId, String userId) async {
@@ -279,7 +262,8 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                 fontWeight: FontWeight.w600,
               ),
               dropdownColor: Colors.indigo,
-              value: _rooms.contains(boardRoom) ? boardRoom : _selectedRoom, // Ensure the value is valid
+              value: _rooms.contains(boardRoom) ? boardRoom : _selectedRoom,
+              // Ensure the value is valid
               decoration: InputDecoration(
                 labelText: 'Pokój',
                 labelStyle: const TextStyle(
@@ -297,43 +281,43 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
               }).toList(),
               onChanged: (boardRoom == null || boardRoom.isEmpty)
                   ? (value) {
-                setState(() {
-                  _selectedRoom = value;
-                });
-              }
+                      setState(() {
+                        _selectedRoom = value;
+                      });
+                    }
                   : null, // Disable changes if boardRoom is set
             ),
             const SizedBox(height: 50.0),
             !isButtonEnabled
-                ?
-            ElevatedButton.icon(
-              onPressed: _scanQRCode,
-              icon: const Icon(Icons.qr_code_scanner),
-              label: const Text(
-                'Zeskanuj QR Code',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ):
-            ElevatedButton.icon(
-              onPressed: _addPeripheral ,
-              label: const Text(
-                'Dodaj urządzenie peripheral',
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
+                ? ElevatedButton.icon(
+                    onPressed: _scanQRCode,
+                    icon: const Icon(Icons.qr_code_scanner),
+                    label: const Text(
+                      'Zeskanuj QR Code',
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  )
+                : ElevatedButton.icon(
+                    onPressed: _addPeripheral,
+                    label: const Text(
+                      'Dodaj urządzenie peripheral',
+                      style: TextStyle(
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
             const SizedBox(height: 20.0),
-            if (!isButtonEnabled) Text(
-              _scannedBoardId != null && _scannedBoardId!.isNotEmpty
-                  ? 'Zeskanowany Board ID: $_scannedBoardId'
-                  : 'Brak zeskanowanego Board ID',
-              style: const TextStyle(color: textColor),
-            ),
+            if (!isButtonEnabled)
+              Text(
+                _scannedBoardId != null && _scannedBoardId!.isNotEmpty
+                    ? 'Zeskanowany Board ID: $_scannedBoardId'
+                    : 'Brak zeskanowanego Board ID',
+                style: const TextStyle(color: textColor),
+              ),
             const Spacer(),
             Padding(
               padding: const EdgeInsets.only(bottom: 40.0),
@@ -343,26 +327,25 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                   if (_scannedBoardId != null && _scannedBoardId!.isNotEmpty)
                     ElevatedButton(
                       onPressed: () async {
-                        final newName = _nameController.text.trim(); // Trim whitespace
+                        final newName = _nameController.text.trim();
                         if (newName.isEmpty) {
-                          // If input is empty, show an error message
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
                               content: Text('Pole "Nazwa urządzenia" nie może być puste.'),
                             ),
                           );
-                          return; // Exit the function if validation fails
+                          return;
                         }
                         final newRoom = _selectedRoom ?? '';
 
                         context.read<BoardsBloc>().add(
-                          AddBoard(
-                            boardId: _scannedBoardId!,
-                            name: newName,
-                            room: newRoom,
-                            peripheral: false,
-                          ),
-                        );
+                              AddBoard(
+                                boardId: _scannedBoardId!,
+                                name: newName,
+                                room: newRoom,
+                                peripheral: false,
+                              ),
+                            );
 
                         showDialog(
                           context: context,

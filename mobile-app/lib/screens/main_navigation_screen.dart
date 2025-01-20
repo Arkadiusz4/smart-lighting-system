@@ -11,6 +11,7 @@ import 'package:mobile_app/screens/home_screen/home_screen.dart';
 import 'package:mobile_app/screens/device_screens/devices_screen.dart';
 import 'package:mobile_app/screens/logs_screens/logs_screen.dart';
 import 'package:mobile_app/screens/account_screens/account_screen.dart';
+import 'package:mobile_app/styles/color.dart';
 import 'package:mobile_app/widgets/bottom_navbar.dart';
 
 class MainNavigationScreen extends StatelessWidget {
@@ -29,14 +30,33 @@ class MainNavigationScreen extends StatelessWidget {
               final boardsBloc = context.watch<BoardsBloc>();
               final boardsState = boardsBloc.state;
 
+              Map<String, String> boardRoomMapping = {};
               String? currentBoardId;
-              String room = "Nieznany pokój";
 
-              if (boardsState is BoardsLoaded && boardsState.currentBoardId != null && boardsState.boards.isNotEmpty) {
+              if (boardsState is BoardsLoaded) {
+                if (boardsState.boards.isEmpty) {
+                  return Scaffold(
+                    appBar: AppBar(
+                      title: const Text(
+                        'Ekran Główny',
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 24.0,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      backgroundColor: darkBackground,
+                    ),
+                    body: const Center(
+                      child: Text(
+                        'Brak dodanych urządzeń.',
+                        style: TextStyle(color: textColor),
+                      ),
+                    ),
+                  );
+                }
                 currentBoardId = boardsState.currentBoardId;
-                boardRoomMapping = {
-                  for (var board in boardsState.boards) board.boardId: board.room
-                };
+                boardRoomMapping = {for (var board in boardsState.boards) board.boardId: board.room};
               }
 
               if (currentBoardId == null) {
@@ -46,7 +66,6 @@ class MainNavigationScreen extends StatelessWidget {
               return HomeScreen(
                 userId: userId,
                 boardRoomMapping: boardRoomMapping,
-
               );
 
             case 1:

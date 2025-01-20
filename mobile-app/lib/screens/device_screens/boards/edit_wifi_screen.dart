@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/screens/device_screens/others/configure_network_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wifi_scan/wifi_scan.dart';
@@ -125,6 +127,7 @@ class _ScanEsp32ScreenEditWifiState extends State<ScanEsp32ScreenEditWifi> {
           content: TextField(
             autofocus: true,
             obscureText: true,
+            style: const TextStyle(color: Colors.black),
             decoration: const InputDecoration(
               labelText: 'Hasło',
             ),
@@ -178,6 +181,7 @@ class _ScanEsp32ScreenEditWifiState extends State<ScanEsp32ScreenEditWifi> {
             mqttPassword: mqttPassword,
             boardId: boardId,
             userId: userId,
+            boardsBloc: BlocProvider.of<BoardsBloc>(context),
           ),
         ),
       );
@@ -198,18 +202,18 @@ class _ScanEsp32ScreenEditWifiState extends State<ScanEsp32ScreenEditWifi> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : ListView.builder(
-        itemCount: espNetworks.length,
-        itemBuilder: (context, index) {
-          final ssid = espNetworks[index];
-          return ListTile(
-            title: Text(
-              ssid,
-              style: const TextStyle(color: Colors.white, fontSize: 18),
+              itemCount: espNetworks.length,
+              itemBuilder: (context, index) {
+                final ssid = espNetworks[index];
+                return ListTile(
+                  title: Text(
+                    ssid,
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                  ),
+                  onTap: () => connectToEspNetwork(ssid),
+                );
+              },
             ),
-            onTap: () => connectToEspNetwork(ssid),
-          );
-        },
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: scanForEspNetworks,
         child: const Icon(Icons.refresh),

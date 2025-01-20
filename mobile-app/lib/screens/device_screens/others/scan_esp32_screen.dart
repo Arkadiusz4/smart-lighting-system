@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:mobile_app/blocs/boards/board_bloc.dart';
 import 'package:mobile_app/screens/device_screens/others/configure_network_screen.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wifi_scan/wifi_scan.dart';
@@ -125,6 +127,7 @@ class _ScanEsp32ScreenState extends State<ScanEsp32Screen> {
           content: TextField(
             autofocus: true,
             obscureText: true,
+            style: const TextStyle(color: Colors.black),
             decoration: const InputDecoration(
               labelText: 'Hasło',
             ),
@@ -170,10 +173,12 @@ class _ScanEsp32ScreenState extends State<ScanEsp32Screen> {
       print('Połączenie z $ssid udane.');
       await WiFiForIoTPlugin.forceWifiUsage(true);
       await Future.delayed(const Duration(seconds: 5));
+      final boardsBloc = BlocProvider.of<BoardsBloc>(context);
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => ConfigureNetworkScreen(
+          builder: (_) => ConfigureNetworkScreen(
+            boardsBloc: boardsBloc,
             clientId: clientId,
             mqttPassword: mqttPassword,
             boardId: boardId,

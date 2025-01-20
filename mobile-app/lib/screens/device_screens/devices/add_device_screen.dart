@@ -21,7 +21,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
   final TextEditingController _ledOnDurationController = TextEditingController();
   final TextEditingController _pirCooldownTimeController = TextEditingController();
 
-  final List<String> _devices = ['LED', 'Sensor ruchu', 'Czujnik dymu', 'Czujnik gazu'];
+  final List<String> _devices = ['LED', 'Sensor ruchu', 'Czujnik zmierzchu'];
   final List<String> _ports = [
     'GPIO1',
     'GPIO2',

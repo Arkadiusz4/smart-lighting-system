@@ -172,10 +172,16 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
                           deviceId: deviceId,
                           name: "Żarówka",
                           type: "LED",
-                          port: "GPIO5",
+                          port: "GPIO6",
                           boardId: boardId,
                           status: "off",
                         );
+                        await Future.delayed(const Duration(seconds: 1));
+                        final deviceIdDrguie = DateTime.now().millisecondsSinceEpoch.toString();
+                        final deviceCzujnikZmierzchu = Device(deviceId: deviceIdDrguie,
+                            name: "Czujnik zmierzchu", type: "Czujnik zmierzchu",
+                            port: "ADC0", boardId: boardId, status: "off");
+
                         final LogEntry log = LogEntry(
                           timestamp: DateTime.now(),
                           message: "Dodano urządzenie",
@@ -185,8 +191,24 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
                           severity: "info",
                         );
 
+                        final LogEntry logDrugi = LogEntry(
+                          timestamp: DateTime.now(),
+                          message: "Dodano urządzenie",
+                          device: deviceCzujnikZmierzchu.name,
+                          boardId: boardId,
+                          userId: FirebaseAuth.instance.currentUser!.uid,
+                          severity: "info",
+                        );
+
+
                         await DevicesRepository(boardId: boardId).addDevice(device);
                         await LogsRepository().addLogEntry(log);
+
+                        print("I am testing here");
+                        await Future.delayed(const Duration(seconds: 2));
+
+                        await DevicesRepository(boardId: boardId).addDevice(deviceCzujnikZmierzchu);
+                        await LogsRepository().addLogEntry(logDrugi);
 
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(

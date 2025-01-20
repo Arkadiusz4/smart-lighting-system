@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_app/blocs/devices/devices_bloc.dart';
 import 'package:mobile_app/blocs/devices/devices_event.dart';
@@ -26,13 +27,14 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
     _nameController = TextEditingController(text: widget.device.name);
     _portController = TextEditingController(text: widget.device.port);
 
-    // Initialize controllers for motion sensor specific fields if applicable
+// Initialize controllers for motion sensor specific fields if applicable
     if (widget.device.type.toLowerCase() == 'sensor ruchu') {
       _ledOnDurationController = TextEditingController(
         text: (widget.device.extraFields?['led_on_duration'] ?? '').toString(),
       );
       _pirCooldownTimeController = TextEditingController(
-        text: (widget.device.extraFields?['pir_cooldown_time'] ?? '').toString(),
+        text:
+            (widget.device.extraFields?['pir_cooldown_time'] ?? '').toString(),
       );
     }
   }
@@ -65,7 +67,8 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
             const SizedBox(height: 10),
             Text(
               'Typ urządzenia: ${widget.device.type}',
-              style: const TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
+              style:
+                  const TextStyle(fontSize: 16.0, fontWeight: FontWeight.w500),
             ),
             const SizedBox(height: 10),
             TextField(
@@ -76,7 +79,10 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
               const SizedBox(height: 20),
               TextField(
                 controller: _ledOnDurationController,
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Czas świecenia diody (LED On Duration)',
                 ),
@@ -84,7 +90,10 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
               const SizedBox(height: 10),
               TextField(
                 controller: _pirCooldownTimeController,
-                keyboardType: TextInputType.number,
+                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: <TextInputFormatter>[
+                  FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
+                ],
                 decoration: const InputDecoration(
                   labelText: 'Czas chłodzenia czujnika PIR (PIR Cooldown Time)',
                 ),
@@ -93,27 +102,58 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                final newName = _nameController.text;
-                final newPort = _portController.text;
+                final newName = _nameController.text.trim();
+                final newPort = _portController.text.trim();
 
-                // Prepare extra fields for motion sensor
-                final extraFields = widget.device.type.toLowerCase() == 'motion sensor'
-                    ? {
-                  'led_on_duration': int.tryParse(_ledOnDurationController?.text ?? '0'),
-                  'pir_cooldown_time': int.tryParse(_pirCooldownTimeController?.text ?? '0'),
+// Validate that device name is not empty
+                if (newName.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Nazwa urządzenia nie może być pusta.'),
+                    ),
+                  );
+                  return;
                 }
-                    : null;
 
-                // Dispatch update event
+                Map<String, dynamic>? extraFields;
+// Validate decimal fields for sensor ruchu
+                if (widget.device.type.toLowerCase() == 'sensor ruchu') {
+                  final ledDurationText =
+                      _ledOnDurationController?.text.trim() ?? '';
+                  final pirCooldownText =
+                      _pirCooldownTimeController?.text.trim() ?? '';
+
+// Try parsing the decimal values
+                  final ledDuration = int.tryParse(ledDurationText);
+                  final pirCooldown = int.tryParse(pirCooldownText);
+
+                  if (ledDuration == null || pirCooldown == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                          'Proszę wprowadzić poprawne wartości liczbowe dla LED Duration i PIR Cooldown Time.',
+                        ),
+                      ),
+                    );
+                    return;
+                  }
+
+                  extraFields = {
+                    'led_on_duration': ledDuration,
+                    'pir_cooldown_time': pirCooldown,
+                  };
+                }
+
+// Dispatch update event
                 context.read<DevicesBloc>().add(UpdateDevice(
-                  deviceId: widget.device.deviceId,
-                  newName: newName,
-                  newType: widget.device.type, // Keep type unchanged
-                  newPort: newPort,
-                  extraFields: extraFields, // Include extra fields if present
-                ));
+                      deviceId: widget.device.deviceId,
+                      newName: newName,
+                      newType: widget.device.type,
+                      newPort: newPort,
+                      extraFields: extraFields,
+                    ));
 
-                Navigator.of(context).pop(); // Go back to the devices list
+                Navigator.of(context).pop(); // Go back to the previous screen
               },
               child: const Text('Zapisz zmiany'),
             ),

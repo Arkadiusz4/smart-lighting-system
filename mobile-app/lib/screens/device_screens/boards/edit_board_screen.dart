@@ -106,6 +106,7 @@ class _EditBoardScreenState extends State<EditBoardScreen> {
               },
             ),
             const SizedBox(height: 50.0),
+            if(!widget.board.peripheral)
             ElevatedButton(
               onPressed: () {
                 // Navigate to the EditWifiScreen

@@ -343,16 +343,26 @@ class _AddBoardScreenState extends State<AddBoardScreen> {
                   if (_scannedBoardId != null && _scannedBoardId!.isNotEmpty)
                     ElevatedButton(
                       onPressed: () async {
-                        final newName = _nameController.text;
+                        final newName = _nameController.text.trim(); // Trim whitespace
+                        if (newName.isEmpty) {
+                          // If input is empty, show an error message
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Pole "Nazwa urządzenia" nie może być puste.'),
+                            ),
+                          );
+                          return; // Exit the function if validation fails
+                        }
                         final newRoom = _selectedRoom ?? '';
+
                         context.read<BoardsBloc>().add(
-                              AddBoard(
-                                boardId: _scannedBoardId!,
-                                name: newName,
-                                room: newRoom,
-                                peripheral: false,
-                              ),
-                            );
+                          AddBoard(
+                            boardId: _scannedBoardId!,
+                            name: newName,
+                            room: newRoom,
+                            peripheral: false,
+                          ),
+                        );
 
                         showDialog(
                           context: context,

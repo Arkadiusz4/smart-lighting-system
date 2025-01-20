@@ -45,6 +45,7 @@ class BoardsRepository {
 
     if (!boardDoc.exists) {
       print('Board nie istnieje, tworzenie nowego dokumentu');
+
       await boardRef.set({
         'mac_address': boardId,
         'encryption_key': '',
@@ -68,6 +69,7 @@ class BoardsRepository {
         'assigned_to': userId,
         'name': name,
         'room': room,
+        'peripheral':peripheral,
       });
     }
 

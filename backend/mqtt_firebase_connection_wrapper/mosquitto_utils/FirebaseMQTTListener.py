@@ -1,7 +1,6 @@
 import subprocess
 import time
 import json
-import threading
 from datetime import datetime
 
 import paho.mqtt.client as mqtt
@@ -15,8 +14,8 @@ def create_on_connect_callback(user_id, boardId):
     def on_connect(client, userdata, flags, rc):
         if rc == 0:
             print(f"[INFO] Client {user_id} connected to MQTT broker on board {boardId}!")
-            # Subskrybuj wszystkie tematy dla danego boardId
             client.subscribe(f"boards/{boardId}/#")
+            client.subscribe("central/command/#")
         else:
             print(f"[ERROR] Client {user_id} connection failed with code: {rc}")
             if rc == 5:
@@ -158,7 +157,6 @@ class FirebaseMQTTListener:
     def monitor_heartbeats(self, check_interval=60, timeout=120):
         while True:
             now = datetime.utcnow()
-            # Sprawdzenie brakujących heartbeatów
             for board_id, last_time in self.last_heartbeat.items():
                 if (now - last_time).total_seconds() > timeout and board_id not in self.lost_boards:
                     print(f"No heartbeat from board {board_id} since {last_time}, logging error.")

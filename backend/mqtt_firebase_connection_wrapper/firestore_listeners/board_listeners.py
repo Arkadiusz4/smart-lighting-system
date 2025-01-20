@@ -1,5 +1,7 @@
 import paho.mqtt.client as mqtt
 
+from mqtt_firebase_connection_wrapper.firestore_listeners.shared_state import peripheral_boards
+
 
 def on_boards_snapshot(col_snapshot, changes, read_time, db, device_listeners):
     for change in changes:
@@ -38,13 +40,28 @@ def on_boards_snapshot(col_snapshot, changes, read_time, db, device_listeners):
             mqtt_client = mqtt.Client()
             mqtt_client.username_pw_set(username=username, password=password)
 
+            if board_data.get("peripheral") is True and "peripheral_id" in board_data:
+                peripheral_boards.add(board_id)
+                peripheral_id = board_data["peripheral_id"].strip()
+                print(f"Requesting scan for peripheral: {peripheral_id}")
+
+                def on_connect_pub(client, userdata, flags, rc):
+                    if rc == 0:
+                        print(f"Connected to MQTT broker, publishing scan command for {peripheral_id}")
+                        client.publish("central/command/scan", peripheral_id)
+                    else:
+                        print(f"Błąd połączenia MQTT przy publikacji: {rc}")
+
+                mqtt_client.on_connect = on_connect_pub
+
             def on_connect(client, userdata, flags, rc):
                 if rc == 0:
                     print(f"Klient {username} połączony z brokerem, można publikować.")
                 else:
                     print(f"Błąd połączenia MQTT: {rc}")
 
-            mqtt_client.on_connect = on_connect
+            if mqtt_client._on_connect is None:
+                mqtt_client.on_connect = on_connect
 
             mqtt_client.connect("192.168.0.145", 2137, 60)
             mqtt_client.loop_start()
@@ -60,6 +77,7 @@ def on_boards_snapshot(col_snapshot, changes, read_time, db, device_listeners):
         elif change.type.name == "REMOVED":
             board_id = change.document.id
             print(f"Board removed: {board_id}")
+            peripheral_boards.discard(board_id)
             if board_id in device_listeners:
                 device_listeners[board_id].unsubscribe()
                 del device_listeners[board_id]

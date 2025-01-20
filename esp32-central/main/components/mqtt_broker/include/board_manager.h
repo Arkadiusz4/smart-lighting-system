@@ -3,7 +3,7 @@
 
 #include "esp_err.h"
 
-static char s_board_id[32] = "defaultBoardId";
+extern char s_board_id[32];
 
 void save_board_id(const char *board_id);
 

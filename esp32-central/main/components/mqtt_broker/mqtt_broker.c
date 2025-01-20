@@ -7,6 +7,8 @@
 #include "mqtt_client.h"
 #include "cJSON.h"
 #include "board_manager.h"
+#include "ble_central.h"
+#include "esp_gap_ble_api.h"
 
 #define TAG "MQTT_CLIENT"
 
@@ -31,21 +33,37 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 snprintf(subscribe_topic, sizeof(subscribe_topic), "boards/%s/devices/+", s_board_id);
                 esp_mqtt_client_subscribe(client, subscribe_topic, 1);
             }
+            esp_mqtt_client_subscribe(client, "central/command", 1);
+
             break;
 
         case MQTT_EVENT_DATA: {
             ESP_LOGI(TAG, "MQTT_EVENT_DATA");
-            char topic[event->topic_len + 1];
-            memcpy(topic, event->topic, event->topic_len);
-            topic[event->topic_len] = '\0';
 
-            char payload[event->data_len + 1];
-            memcpy(payload, event->data, event->data_len);
-            payload[event->data_len] = '\0';
+            char *cmd_topic = strndup(event->topic, event->topic_len);
+            char *cmd_data = strndup(event->data, event->data_len);
+            ESP_LOGI(TAG, "MQTT Data received on topic: %s, data: %s", cmd_topic, cmd_data);
 
-            ESP_LOGI(TAG, "Odebrano na temat: %s, dane: %s", topic, payload);
+            if (strcmp(cmd_topic, "central/command") == 0) {
+                if (strcmp(cmd_data, "scan") == 0) {
+                    ESP_LOGI(TAG, "MQTT command 'scan' received: starting scan");
+                    esp_ble_gap_start_scanning(30);
+                } else if (strcmp(cmd_data, "led_on") == 0) {
+                    ESP_LOGI(TAG, "MQTT command 'led_on' received");
+                    ble_central_write_led("on");
+                } else if (strcmp(cmd_data, "led_off") == 0) {
+                    ESP_LOGI(TAG, "MQTT command 'led_off' received");
+                    ble_central_write_led("off");
+                }
+            }
+            free(cmd_topic);
+            free(cmd_data);
 
-            cJSON *json = cJSON_Parse(payload);
+            char *topic = strndup(event->topic, event->topic_len);
+            char *payload_str = strndup(event->data, event->data_len);
+            ESP_LOGI(TAG, "Odebrano na temat: %s, dane: %s", topic, payload_str);
+
+            cJSON *json = cJSON_Parse(payload_str);
             if (json == NULL) {
                 ESP_LOGW(TAG, "Nie można sparsować JSON");
             } else {
@@ -55,6 +73,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                     strcmp(status_item->valuestring, "removed") == 0) {
                     device_control_remove_device(device_id_item->valuestring);
                     cJSON_Delete(json);
+                    free(topic);
+                    free(payload_str);
                     break;
                 }
 
@@ -86,6 +106,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
 
                 cJSON_Delete(json);
             }
+            free(topic);
+            free(payload_str);
             break;
         }
 

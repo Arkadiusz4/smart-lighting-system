@@ -2,7 +2,7 @@
 #include "nvs.h"
 #include <string.h>
 
-static char s_board_id[32] = "defaultBoardId";
+char s_board_id[32] = "defaultBoardId";
 
 esp_err_t save_board_id(const char *board_id) {
     nvs_handle_t nvs_handle;
@@ -14,6 +14,7 @@ esp_err_t save_board_id(const char *board_id) {
         err = nvs_commit(nvs_handle);
     }
     nvs_close(nvs_handle);
+    strncpy(s_board_id, board_id, sizeof(s_board_id) - 1);
     return err;
 }
 

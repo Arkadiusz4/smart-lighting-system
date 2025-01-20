@@ -1,11 +1,15 @@
 #include "ble_central.h"
 #include "gatt_client.h"
-#include "temperature.h"
 #include "esp_log.h"
 #include "esp_gap_ble_api.h"
 #include "esp_gattc_api.h"
 #include "nvs_flash.h"
 #include <string.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "mqtt_client.h"
+
+static esp_mqtt_client_handle_t mqtt_client = NULL;
 
 #define TAG "BLE_CENTRAL"
 #define REMOTE_DEVICE_NAME "ESP32-C3-BLE"
@@ -40,6 +44,50 @@ static char *bda2str(esp_bd_addr_t bda, char *str, size_t size) {
              bda[0], bda[1], bda[2], bda[3], bda[4], bda[5]);
     return str;
 }
+
+esp_err_t ble_central_write_led(const char *cmd) {
+    if (!connected) {
+        ESP_LOGW(TAG, "Not connected");
+        return ESP_FAIL;
+    }
+    if (!char_handle_global) {
+        ESP_LOGW(TAG, "No char_handle found");
+        return ESP_FAIL;
+    }
+    size_t cmd_len = strlen(cmd);
+    if (cmd_len > 20) cmd_len = 20;
+    esp_err_t err = esp_ble_gattc_write_char(
+            gattc_if_global,
+            conn_id_global,
+            char_handle_global,
+            cmd_len,
+            (uint8_t *) cmd,
+            ESP_GATT_WRITE_TYPE_RSP,
+            ESP_GATT_AUTH_REQ_NONE
+    );
+    ESP_LOGI(TAG, "Write LED: %s (err=%s)", cmd, esp_err_to_name(err));
+    return err;
+}
+
+static void led_toggle_task(void *pv) {
+    while (1) {
+        if (connected && char_handle_global) {
+            ble_central_write_led("on");
+            vTaskDelay(pdMS_TO_TICKS(5000));
+
+            // Wyłącz LED
+            ble_central_write_led("off");
+            vTaskDelay(pdMS_TO_TICKS(5000));
+        } else {
+            vTaskDelay(pdMS_TO_TICKS(2000));
+        }
+    }
+}
+
+void ble_central_start_toggle_task(void) {
+    xTaskCreate(led_toggle_task, "led_toggle_task", 4096, NULL, 5, NULL);
+}
+
 
 esp_err_t ble_central_init(void) {
     esp_err_t ret;
@@ -151,8 +199,6 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
                         if (count > 0 && char_elem_result != NULL) {
                             char_handle_global = char_elem_result[0].char_handle;
                             ESP_LOGI(TAG, "Characteristic found, handle: %d", char_handle_global);
-
-                            temperature_init();
                         } else {
                             ESP_LOGE(TAG, "Characteristic not found");
                         }
@@ -173,7 +219,6 @@ static void gattc_event_handler(esp_gattc_cb_event_t event,
             ESP_LOGI(TAG, "Characteristic value:");
             esp_log_buffer_hex(TAG, param->read.value, param->read.value_len);
 
-            handle_temperature_data(param->read.value, param->read.value_len);
             break;
         case ESP_GATTC_DISCONNECT_EVT:
             ESP_LOGI(TAG, "ESP_GATTC_DISCONNECT_EVT, reason = %d", param->disconnect.reason);
@@ -203,7 +248,6 @@ static void gap_event_handler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param
     switch (event) {
         case ESP_GAP_BLE_SCAN_PARAM_SET_COMPLETE_EVT:
             ESP_LOGI(TAG, "Scan parameters set, starting scan");
-            esp_ble_gap_start_scanning(30);
             break;
         case ESP_GAP_BLE_SCAN_START_COMPLETE_EVT:
             if ((err = param->scan_start_cmpl.status) != ESP_BT_STATUS_SUCCESS) {

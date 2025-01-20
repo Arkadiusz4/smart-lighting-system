@@ -63,7 +63,7 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
-          key: _formKey, // Assign the form key
+          key: _formKey, // Przypisanie klucza formularza
           child: Column(
             children: [
               TextFormField(
@@ -148,78 +148,101 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
                   children: [
                     ElevatedButton(
                       onPressed: () async {
-                        // Validate the form fields
+                        // Walidacja formularza
                         if (!_formKey.currentState!.validate()) {
-                          return; // Stop if validation fails
+                          return; // Zatrzymaj, jeśli walidacja się nie powiodła
                         }
-                        final newName = _deviceNameController.text.trim();
-                        final boardId = _deviceIdController.text.trim();
-                        final newRoom = _selectedRoom ?? '';
 
-                        // Dispatch event to add peripheral board
-                        context.read<BoardsBloc>().add(
-                          AddPeripheralBoard(
-                            boardId: boardId,
-                            name: newName,
-                            room: newRoom,
-                            peripheral: true,
-                          ),
+                        // Pokaż okno dialogowe z wskaźnikiem ładowania
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (context) => const Center(child: CircularProgressIndicator()),
                         );
 
-                        await Future.delayed(const Duration(seconds: 2));
-                        final deviceId = DateTime.now().millisecondsSinceEpoch.toString();
-                        final device = Device(
-                          deviceId: deviceId,
-                          name: "Żarówka",
-                          type: "LED",
-                          port: "GPIO6",
-                          boardId: boardId,
-                          status: "off",
-                        );
-                        await Future.delayed(const Duration(seconds: 1));
-                        final deviceIdDrguie = DateTime.now().millisecondsSinceEpoch.toString();
-                        final deviceCzujnikZmierzchu = Device(deviceId: deviceIdDrguie,
-                            name: "Czujnik zmierzchu", type: "Czujnik zmierzchu",
-                            port: "ADC0", boardId: boardId, status: "off");
+                        try {
+                          final newName = _deviceNameController.text.trim();
+                          final boardId = _deviceIdController.text.trim();
+                          final newRoom = _selectedRoom ?? '';
 
-                        final LogEntry log = LogEntry(
-                          timestamp: DateTime.now(),
-                          message: "Dodano urządzenie",
-                          device: device.name,
-                          boardId: boardId,
-                          userId: FirebaseAuth.instance.currentUser!.uid,
-                          severity: "info",
-                        );
-
-                        final LogEntry logDrugi = LogEntry(
-                          timestamp: DateTime.now(),
-                          message: "Dodano urządzenie",
-                          device: deviceCzujnikZmierzchu.name,
-                          boardId: boardId,
-                          userId: FirebaseAuth.instance.currentUser!.uid,
-                          severity: "info",
-                        );
-
-
-                        await DevicesRepository(boardId: boardId).addDevice(device);
-                        await LogsRepository().addLogEntry(log);
-
-                        print("I am testing here");
-                        await Future.delayed(const Duration(seconds: 2));
-
-                        await DevicesRepository(boardId: boardId).addDevice(deviceCzujnikZmierzchu);
-                        await LogsRepository().addLogEntry(logDrugi);
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              'Urządzenie peripheral zostało dodane!',
-                              style: TextStyle(fontWeight: FontWeight.w600),
+                          // Wysyłanie zdarzenia do Bloc
+                          context.read<BoardsBloc>().add(
+                            AddPeripheralBoard(
+                              boardId: boardId,
+                              name: newName,
+                              room: newRoom,
+                              peripheral: true,
                             ),
-                          ),
-                        );
-                        await Future.delayed(const Duration(seconds: 1));
-                        Navigator.pop(context);
+                          );
+
+                          await Future.delayed(const Duration(seconds: 2));
+                          final deviceId = DateTime.now().millisecondsSinceEpoch.toString();
+                          final device = Device(
+                            deviceId: deviceId,
+                            name: "Żarówka",
+                            type: "LED",
+                            port: "GPIO6",
+                            boardId: boardId,
+                            status: "off",
+                          );
+                          await Future.delayed(const Duration(seconds: 1));
+                          final deviceIdDrugi = DateTime.now().millisecondsSinceEpoch.toString();
+                          final deviceCzujnikZmierzchu = Device(
+                            deviceId: deviceIdDrugi,
+                            name: "Czujnik zmierzchu",
+                            type: "Czujnik zmierzchu",
+                            port: "ADC0",
+                            boardId: boardId,
+                            status: "off",
+                          );
+
+                          final LogEntry log = LogEntry(
+                            timestamp: DateTime.now(),
+                            message: "Dodano urządzenie",
+                            device: device.name,
+                            boardId: boardId,
+                            userId: FirebaseAuth.instance.currentUser!.uid,
+                            severity: "info",
+                          );
+
+                          final LogEntry logDrugi = LogEntry(
+                            timestamp: DateTime.now(),
+                            message: "Dodano urządzenie",
+                            device: deviceCzujnikZmierzchu.name,
+                            boardId: boardId,
+                            userId: FirebaseAuth.instance.currentUser!.uid,
+                            severity: "info",
+                          );
+
+                          await DevicesRepository(boardId: boardId).addDevice(device);
+                          await LogsRepository().addLogEntry(log);
+
+                          print("I am testing here");
+                          await Future.delayed(const Duration(seconds: 2));
+
+                          await DevicesRepository(boardId: boardId).addDevice(deviceCzujnikZmierzchu);
+                          await LogsRepository().addLogEntry(logDrugi);
+
+                          // Zamknij okno dialogowe z wskaźnikiem ładowania
+                          Navigator.of(context).pop();
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                'Urządzenie peripheral zostało dodane!',
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                          );
+                          await Future.delayed(const Duration(seconds: 1));
+                          Navigator.pop(context);
+                        } catch (e) {
+                          // W przypadku błędu, zamknij wskaźnik ładowania i pokaż komunikat
+                          Navigator.of(context).pop();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Wystąpił błąd: $e')),
+                          );
+                        }
                       },
                       child: const Text('Connect'),
                     ),
@@ -233,4 +256,3 @@ class _AddPeripheralBoardScreenState extends State<AddPeripheralBoardScreen> {
     );
   }
 }
-

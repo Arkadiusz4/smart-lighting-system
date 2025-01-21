@@ -164,7 +164,8 @@ class DevicesListScreen extends StatelessWidget {
             return const SizedBox();
           },
         ),
-        floatingActionButton: Builder(
+        floatingActionButton: !isPeripheral
+            ? Builder(
           builder: (context) => FloatingActionButton(
             backgroundColor: primaryColor,
             onPressed: () {
@@ -182,7 +183,8 @@ class DevicesListScreen extends StatelessWidget {
             },
             child: const Icon(Icons.add),
           ),
-        ),
+        )
+            : const SizedBox(),
       ),
     );
   }

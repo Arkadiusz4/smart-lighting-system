@@ -46,6 +46,14 @@ class LogIconHelper {
         return Icons.sensors_off;
       }
     }
+    if (log.device == 'Device') {
+      if (log.eventType == 'sensor_on') {
+        return Icons.nightlight;
+      } else if (log.eventType == 'sensor_off') {
+        return Icons.sunny;
+      }
+    }
+
     if (log.device == 'Network') {
       if (log.eventType == 'connection_lost') {
         return Icons.wifi_tethering_off;
@@ -66,9 +74,11 @@ class LogIconHelper {
 
     if (log.eventType == 'add_board' || log.eventType == 'add_device') {
       return Colors.green;
-    } else if (log.eventType == 'edit_board' || log.eventType == 'edit_device') {
+    } else if (log.eventType == 'edit_board' ||
+        log.eventType == 'edit_device') {
       return Colors.blue;
-    } else if (log.eventType == 'unassign_board' || log.eventType == 'remove_device') {
+    } else if (log.eventType == 'unassign_board' ||
+        log.eventType == 'remove_device') {
       return Colors.red;
     }
 

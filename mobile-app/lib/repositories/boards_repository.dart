@@ -56,6 +56,16 @@ class BoardsRepository {
         'room': room,
         'peripheral': peripheral,
       });
+      final devicesCollectionRef = boardRef.collection('devices');
+
+      await devicesCollectionRef.add({
+        'device_id': 'placeholder_device',
+        'name': 'Placeholder Device',
+        'status': 'inactive',
+        'created_at': FieldValue.serverTimestamp(),
+      });
+
+
     } else {
       final data = boardDoc.data();
       print('Board już istnieje: $data');
@@ -71,6 +81,15 @@ class BoardsRepository {
         'room': room,
         'peripheral':peripheral,
       });
+      final devicesCollectionRef = boardRef.collection('devices');
+
+      await devicesCollectionRef.add({
+        'device_id': 'placeholder_device',
+        'name': 'Placeholder Device',
+        'status': 'inactive',
+        'created_at': FieldValue.serverTimestamp(),
+      });
+
     }
 
     if (querySnapshot.docs.isEmpty) {

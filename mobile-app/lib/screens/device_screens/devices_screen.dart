@@ -98,9 +98,11 @@ class DevicesScreen extends StatelessWidget {
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                content: const Text(
-                                  "Czy na pewno chcesz usunąć to urządzenie?",
-                                  style: TextStyle(
+                                content: Text(
+                                  board.peripheral
+                                      ? "Czy na pewno chcesz usunąć to peryferyjne urządzenie?"
+                                      : "Czy na pewno chcesz usunąć to urządzenie i wszystkie z nim związane?",
+                                  style: const TextStyle(
                                     color: textColor,
                                     fontSize: 16.0,
                                     fontWeight: FontWeight.w400,
@@ -123,7 +125,24 @@ class DevicesScreen extends StatelessWidget {
                                   TextButton(
                                     onPressed: () {
                                       Navigator.of(context).pop();
-                                      devicesBloc.add(RemoveBoard(board.boardId, userId, board.name, board.peripheral));
+                                      if (board.peripheral) {
+                                        devicesBloc.add(RemoveBoard(
+                                          board.boardId,
+                                          userId,
+                                          board.name,
+                                          board.peripheral,
+                                        ));
+                                      } else {
+                                        // Iterate over all boards and print their names
+                                        for (var b in boards) {
+                                          devicesBloc.add(RemoveBoard(
+                                            b.boardId,
+                                            userId,
+                                            b.name,
+                                            b.peripheral
+                                          ));
+                                        }
+                                      }
                                     },
                                     child: const Text(
                                       "Tak",

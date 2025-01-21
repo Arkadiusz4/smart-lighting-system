@@ -41,6 +41,14 @@ def on_devices_snapshot(board_id, mqtt_client, col_snapshot, changes, read_time)
                 elif status == "off":
                     print(f"Publishing LED OFF command for peripheral device {device_id}")
                     mqtt_client.publish("central/command/led_off", device_id)
+            elif device_data.get('type')=="Czujnik ruchu" and board_id in peripheral_boards:
+                status = device_data.get("status")
+                if status == "on":
+                    print(f"Publishing LED ON command for peripheral device {device_id}")
+                    mqtt_client.publish("central/command/darkness_sensor_on", device_id)
+                elif status == "off":
+                    print(f"Publishing LED OFF command for peripheral device {device_id}")
+                    mqtt_client.publish("central/command/darkness_sensor_off", device_id)            
 
 
         elif change.type.name == "REMOVED":

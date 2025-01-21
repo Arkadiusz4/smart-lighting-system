@@ -43,30 +43,37 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
         case MQTT_EVENT_DATA: {
             ESP_LOGI(TAG, "MQTT_EVENT_DATA");
 
-            char *incoming_topic = strndup(event->topic, event->topic_len);
-            char *incoming_data = strndup(event->data, event->data_len);
-            ESP_LOGI(TAG, "MQTT Data received on topic: %s, data: %s", incoming_topic, incoming_data);
+            char *topic = strndup(event->topic, event->topic_len);
+            char *data = strndup(event->data, event->data_len);
+            if (!topic || !data) {
+                ESP_LOGE(TAG, "Nie udało się alokować pamięci dla topic/data");
+                free(topic);
+                free(data);
+                break;
+            }
 
-            if (strncmp(incoming_topic, "central/command/scan", strlen("central/command/scan")) == 0) {
-                strncpy(remote_device_name, incoming_data, sizeof(remote_device_name) - 1);
+            ESP_LOGI(TAG, "MQTT Data received on topic: %s, data: %s", topic, data);
+
+            if (strncmp(topic, "central/command/scan", strlen("central/command/scan")) == 0) {
+                strncpy(remote_device_name, data, sizeof(remote_device_name) - 1);
                 remote_device_name[sizeof(remote_device_name) - 1] = '\0';
                 ESP_LOGI(TAG, "Setting remote device name to: %s", remote_device_name);
                 esp_ble_gap_start_scanning(30);
-            } else if (strncmp(incoming_topic, "central/command/led_on", strlen("central/command/led_on")) == 0) {
+            } else if (strncmp(topic, "central/command/led_on", strlen("central/command/led_on")) == 0) {
                 ESP_LOGI(TAG, "MQTT command 'led_on' received");
                 ble_central_write_led("on");
-            } else if (strncmp(incoming_topic, "central/command/led_off", strlen("central/command/led_off")) == 0) {
+            } else if (strncmp(topic, "central/command/led_off", strlen("central/command/led_off")) == 0) {
                 ESP_LOGI(TAG, "MQTT command 'led_off' received");
                 ble_central_write_led("off");
-            } else if (strncmp(incoming_topic, "central/command/darkness_sensor_on",
+            } else if (strncmp(topic, "central/command/darkness_sensor_on",
                                strlen("central/command/darkness_sensor_on")) == 0) {
                 ESP_LOGI(TAG, "MQTT command 'darkness_sensor_on' received");
                 ble_central_write_darkness_sensor("on");
-            } else if (strncmp(incoming_topic, "central/command/darkness_sensor_off",
+            } else if (strncmp(topic, "central/command/darkness_sensor_off",
                                strlen("central/command/darkness_sensor_off")) == 0) {
                 ESP_LOGI(TAG, "MQTT command 'darkness_sensor_off' received");
                 ble_central_write_darkness_sensor("off");
-            } else if (strncmp(incoming_topic, "central/command/reset", strlen("central/command/reset")) == 0) {
+            } else if (strncmp(topic, "central/command/reset", strlen("central/command/reset")) == 0) {
                 ESP_LOGI(TAG, "MQTT command 'reset' received");
                 esp_err_t err = nvs_flash_erase();
                 if (err == ESP_OK) {
@@ -75,7 +82,7 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 } else {
                     ESP_LOGE(TAG, "Failed to erase flash: %s", esp_err_to_name(err));
                 }
-            } else if (strncmp(incoming_topic, "central/command/peripheral_disconnect",
+            } else if (strncmp(topic, "central/command/peripheral_disconnect",
                                strlen("central/command/peripheral_disconnect")) == 0) {
                 ESP_LOGI(TAG, "MQTT command 'peripheral_disconnect' received");
                 manual_disconnect = true;
@@ -84,78 +91,59 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                     esp_ble_gattc_close(gattc_if_global, conn_id_global);
                     ESP_LOGI(TAG, "Disconnected from peripheral");
                 }
-            }
-
-            free(incoming_topic);
-            free(incoming_data);
-
-            char *topic = strndup(event->topic, event->topic_len);
-            char *payload_str = strndup(event->data, event->data_len);
-            ESP_LOGI(TAG, "Odebrano na temat: %s, dane: %s", topic, payload_str);
-
-            if (strncmp(topic, "central/command/scan", strlen("central/command/scan")) == 0) {
-                free(topic);
-                free(payload_str);
-                break;
-            }
-            if (strncmp(topic, "central/command/led_on", strlen("central/command/led_on")) == 0) {
-                free(topic);
-                free(payload_str);
-                break;
-            }
-            if (strncmp(topic, "central/command/led_off", strlen("central/command/led_off")) == 0) {
-                free(topic);
-                free(payload_str);
-                break;
-            }
-
-            cJSON *json = cJSON_Parse(payload_str);
-            if (json == NULL) {
-                ESP_LOGW(TAG, "Nie można sparsować JSON");
             } else {
-                cJSON *status_item = cJSON_GetObjectItem(json, "status");
-                cJSON *device_id_item = cJSON_GetObjectItem(json, "deviceId");
-                if (cJSON_IsString(status_item) && cJSON_IsString(device_id_item) &&
-                    strcmp(status_item->valuestring, "removed") == 0) {
-                    device_control_remove_device(device_id_item->valuestring);
-                    cJSON_Delete(json);
-                    free(topic);
-                    free(payload_str);
-                    break;
-                }
+                ESP_LOGI(TAG, "Odebrano na temat: %s, dane: %s", topic, data);
 
-                cJSON *port_item = cJSON_GetObjectItem(json, "port");
-                cJSON *type_item = cJSON_GetObjectItem(json, "type");
-                cJSON *cooldown_item = cJSON_GetObjectItem(json, "pir_cooldown_time");
-                cJSON *ledOn_item = cJSON_GetObjectItem(json, "led_on_duration");
-
-                if (cJSON_IsString(device_id_item) &&
-                    cJSON_IsString(status_item) &&
-                    cJSON_IsString(port_item) &&
-                    cJSON_IsString(type_item)) {
-                    const char *device_id_str = device_id_item->valuestring;
-                    const char *status_str = status_item->valuestring;
-                    const char *port_str = port_item->valuestring;
-                    const char *type_str = type_item->valuestring;
-                    const char *cooldown_str = cJSON_IsString(cooldown_item) ? cooldown_item->valuestring : "0";
-                    const char *ledOn_str = cJSON_IsString(ledOn_item) ? ledOn_item->valuestring : "0";
-
-                    device_control_update_device(device_id_str,
-                                                 type_str,
-                                                 port_str,
-                                                 status_str,
-                                                 cooldown_str,
-                                                 ledOn_str);
+                cJSON *json = cJSON_Parse(data);
+                if (json == NULL) {
+                    ESP_LOGW(TAG, "Nie można sparsować JSON");
                 } else {
-                    ESP_LOGW(TAG, "Brak wymaganych pól w otrzymanym JSON (deviceId/status/port/type).");
-                }
+                    cJSON *status_item = cJSON_GetObjectItem(json, "status");
+                    cJSON *device_id_item = cJSON_GetObjectItem(json, "deviceId");
+                    if (cJSON_IsString(status_item) && cJSON_IsString(device_id_item) &&
+                        strcmp(status_item->valuestring, "removed") == 0) {
+                        device_control_remove_device(device_id_item->valuestring);
+                        cJSON_Delete(json);
+                        free(topic);
+                        free(data);
+                        break;
+                    }
 
-                cJSON_Delete(json);
+                    cJSON *port_item = cJSON_GetObjectItem(json, "port");
+                    cJSON *type_item = cJSON_GetObjectItem(json, "type");
+                    cJSON *cooldown_item = cJSON_GetObjectItem(json, "pir_cooldown_time");
+                    cJSON *ledOn_item = cJSON_GetObjectItem(json, "led_on_duration");
+
+                    if (cJSON_IsString(device_id_item) &&
+                        cJSON_IsString(status_item) &&
+                        cJSON_IsString(port_item) &&
+                        cJSON_IsString(type_item)) {
+                        const char *device_id_str = device_id_item->valuestring;
+                        const char *status_str = status_item->valuestring;
+                        const char *port_str = port_item->valuestring;
+                        const char *type_str = type_item->valuestring;
+                        const char *cooldown_str = cJSON_IsString(cooldown_item) ? cooldown_item->valuestring : "0";
+                        const char *ledOn_str = cJSON_IsString(ledOn_item) ? ledOn_item->valuestring : "0";
+
+                        device_control_update_device(device_id_str,
+                                                     type_str,
+                                                     port_str,
+                                                     status_str,
+                                                     cooldown_str,
+                                                     ledOn_str);
+                    } else {
+                        ESP_LOGW(TAG, "Brak wymaganych pól w otrzymanym JSON (deviceId/status/port/type).");
+                    }
+
+                    cJSON_Delete(json);
+                }
             }
+
             free(topic);
-            free(payload_str);
+            free(data);
             break;
         }
+            break;
 
         case MQTT_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "MQTT disconnected");
@@ -218,7 +206,7 @@ void mqtt_app_start(void) {
     ESP_LOGI(TAG, "Inicjalizacja MQTT z clientId=%s", clientId);
 
     const esp_mqtt_client_config_t mqtt_cfg = {
-            .broker.address.uri = "mqtt://192.168.0.145",
+            .broker.address.uri = "mqtt://192.168.171.3",
             .broker.address.port = 2137,
             .credentials = {
                     .username = clientId,
@@ -253,5 +241,5 @@ void mqtt_app_start(void) {
     strncpy(s_board_id, board_id, sizeof(s_board_id) - 1);
     device_control_set_board_id(board_id);
 
-    xTaskCreate(heartbeat_task, "heartbeat_task", 2048, (void *) board_id, 5, NULL);
+    xTaskCreate(heartbeat_task, "heartbeat_task", 4096, (void *) board_id, 5, NULL);
 }

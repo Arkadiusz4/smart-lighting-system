@@ -56,14 +56,7 @@ class BoardsRepository {
         'room': room,
         'peripheral': peripheral,
       });
-      final devicesCollectionRef = boardRef.collection('devices');
 
-      await devicesCollectionRef.add({
-        'device_id': 'placeholder_device',
-        'name': 'Placeholder Device',
-        'status': 'inactive',
-        'created_at': FieldValue.serverTimestamp(),
-      });
 
 
     } else {
@@ -81,14 +74,7 @@ class BoardsRepository {
         'room': room,
         'peripheral':peripheral,
       });
-      final devicesCollectionRef = boardRef.collection('devices');
 
-      await devicesCollectionRef.add({
-        'device_id': 'placeholder_device',
-        'name': 'Placeholder Device',
-        'status': 'inactive',
-        'created_at': FieldValue.serverTimestamp(),
-      });
 
     }
 

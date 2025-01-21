@@ -69,7 +69,7 @@ class _EditDeviceScreenState extends State<EditDeviceScreen> {
         title: const Text('Edytuj urządzenie'),
         backgroundColor: darkBackground,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

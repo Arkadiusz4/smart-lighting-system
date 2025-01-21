@@ -59,7 +59,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
         ),
         backgroundColor: darkBackground,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
@@ -95,7 +95,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                   fontWeight: FontWeight.w300,
                 ),
               ),
-              value: _devices.first,
+              value: _selectedDevice ?? _devices.first,
               items: _devices.map((device) {
                 return DropdownMenuItem(
                   value: device,
@@ -124,7 +124,7 @@ class _AddDeviceScreenState extends State<AddDeviceScreen> {
                   fontWeight: FontWeight.w300,
                 ),
               ),
-              value: _ports.first,
+              value: _selectedPort ?? _ports.first,
               items: _ports.map((port) {
                 return DropdownMenuItem(
                   value: port,

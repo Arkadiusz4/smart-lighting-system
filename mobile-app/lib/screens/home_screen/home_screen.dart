@@ -74,7 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: darkBackground,
       ),
       body: MultiBlocProvider(
-        providers: devicesBlocs.map((bloc) => BlocProvider<DevicesBloc>.value(value: bloc)).toList(),
+        providers: devicesBlocs
+            .map((bloc) =>
+        BlocProvider<DevicesBloc>.value(value: bloc))
+            .toList(),
         child: ListView(
           children: groupedByRoom.entries.map((entry) {
             final roomName = entry.key;
@@ -85,14 +88,16 @@ class _HomeScreenState extends State<HomeScreen> {
               color: darkBackground,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15.0),
-                side: const BorderSide(color: primaryColor, width: 2.0),
+                side:
+                const BorderSide(color: primaryColor, width: 2.0),
               ),
               elevation: 5,
               shadowColor: primaryColor.withOpacity(0.5),
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ExpansionTile(
-                  leading: Icon(getRoomIcon(roomName), color: primaryColor),
+                  leading:
+                  Icon(getRoomIcon(roomName), color: primaryColor),
                   title: Text(
                     roomName,
                     style: const TextStyle(
@@ -101,158 +106,226 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: primaryColor,
                     ),
                   ),
-                  children: roomBlocs.map((bloc) {
-                    return BlocBuilder<DevicesBloc, DevicesState>(
-                      bloc: bloc,
-                      builder: (context, state) {
-                        if (state is DevicesLoading) {
-                          return const Center(child: CircularProgressIndicator());
-                        } else if (state is DevicesLoaded) {
-                          if (state.devices.isEmpty) {
-                            return const Padding(
-                              padding: EdgeInsets.all(15.0),
-                              child: Center(
-                                child: Text(
-                                  'Brak urządzeń.',
-                                  style: TextStyle(
-                                    color: textColor,
-                                    fontSize: 16.0,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
+                  children: () {
+                    // Check if all boards in this room are loaded and empty.
+                    final allEmpty = roomBlocs.every((bloc) {
+                      final currentState = bloc.state;
+                      return currentState is DevicesLoaded &&
+                          currentState.devices.isEmpty;
+                    });
+
+                    if (allEmpty) {
+                      // If all boards are empty, show the message once.
+                      return [
+                        const Padding(
+                          padding: EdgeInsets.all(15.0),
+                          child: Center(
+                            child: Text(
+                              'Brak urządzeń.',
+                              style: TextStyle(
+                                color: textColor,
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.w700,
                               ),
-                            );
-                          }
-                          return Column(
-                            children: state.devices.map((Device device) {
-                              print(device.type);
-                              if (device.type.toLowerCase() == 'led' ) {
-                                return ExpansionTile(
-                                  leading: Icon(getDeviceIcon(device.type), color: primaryColor),
-                                  title: Text(
-                                    device.name,
-                                    style: const TextStyle(
-                                      color: textColor,
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    'Port: ${device.port}, status: ${device.status ?? 'off'}',
-                                    style: const TextStyle(
-                                      color: textColor,
-                                      fontSize: 14.0,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  children: [
-                                    LedSwitch(
-                                      device: device,
-                                      userId: widget.userId,
-                                      devicesBloc: bloc,
-                                    ),
-                                  ],
-                                );
-                              }else if(device.type.toLowerCase() == 'czujnik zmierzchu') {
-                                return ExpansionTile(
-                                  leading: Icon(getDeviceIcon(device.type),
-                                      color: primaryColor),
-                                  title: Text(
-                                    device.name,
-                                    style: const TextStyle(
-                                      color: textColor,
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    'Port: ${device.port}, status: ${device
-                                        .status ?? 'off'}',
-                                    style: const TextStyle(
-                                      color: textColor,
-                                      fontSize: 14.0,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  children: [
-                                    SwitchButton(
-                                      device: device,
-                                      userId: widget.userId,
-                                      devicesBloc: bloc,
-                                    ),
-                                  ],
-                                );
+                            ),
+                          ),
+                        )
+                      ];
+                    } else {
+                      // Otherwise, display individual board widgets.
+                      return roomBlocs.map((bloc) {
+                        return BlocBuilder<DevicesBloc, DevicesState>(
+                          bloc: bloc,
+                          builder: (context, state) {
+                            if (state is DevicesLoading) {
+                              return const Center(
+                                  child: CircularProgressIndicator());
+                            } else if (state is DevicesLoaded) {
+                              if (state.devices.isEmpty) {
+                                // Return an empty widget if this board has no devices.
+                                return const SizedBox.shrink();
                               }
-                              else if (device.type.toLowerCase() == 'sensor ruchu') {
-                                final int ledOnDuration =
-                                    int.tryParse(device.extraFields?['led_on_duration']?.toString() ?? '') ?? 1000;
-                                final int pirCooldownTime =
-                                    int.tryParse(device.extraFields?['pir_cooldown_time']?.toString() ?? '') ?? 5000;
+                              // Render devices for this board if available.
+                              return Column(
+                                children: state.devices.map((Device device) {
+                                  print(device.type);
+                                  if (device.type
+                                      .toLowerCase() ==
+                                      'led') {
+                                    return ExpansionTile(
+                                      leading: Icon(
+                                          getDeviceIcon(device.type),
+                                          color: primaryColor),
+                                      title: Text(
+                                        device.name,
+                                        style:
+                                        const TextStyle(
+                                          color: textColor,
+                                          fontSize: 16.0,
+                                          fontWeight:
+                                          FontWeight.w700,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        'Port: ${device.port}, status: ${device.status ?? 'off'}',
+                                        style:
+                                        const TextStyle(
+                                          color: textColor,
+                                          fontSize: 14.0,
+                                          fontWeight:
+                                          FontWeight.w400,
+                                        ),
+                                      ),
+                                      children: [
+                                        LedSwitch(
+                                          device: device,
+                                          userId: widget.userId,
+                                          devicesBloc: bloc,
+                                        ),
+                                      ],
+                                    );
+                                  } else if (device.type
+                                      .toLowerCase() ==
+                                      'czujnik zmierzchu') {
+                                    return ExpansionTile(
+                                      leading: Icon(
+                                          getDeviceIcon(
+                                              device.type),
+                                          color: primaryColor),
+                                      title: Text(
+                                        device.name,
+                                        style:
+                                        const TextStyle(
+                                          color: textColor,
+                                          fontSize: 16.0,
+                                          fontWeight:
+                                          FontWeight.w700,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        'Port: ${device.port}, status: ${device.status ?? 'off'}',
+                                        style:
+                                        const TextStyle(
+                                          color: textColor,
+                                          fontSize: 14.0,
+                                          fontWeight:
+                                          FontWeight.w400,
+                                        ),
+                                      ),
+                                      children: [
+                                        SwitchButton(
+                                          device: device,
+                                          userId: widget.userId,
+                                          devicesBloc: bloc,
+                                        ),
+                                      ],
+                                    );
+                                  } else if (device.type
+                                      .toLowerCase() ==
+                                      'sensor ruchu') {
+                                    final int ledOnDuration =
+                                        int.tryParse(device
+                                            .extraFields?[
+                                        'led_on_duration']
+                                            ?.toString() ??
+                                            '') ??
+                                            1000;
+                                    final int pirCooldownTime =
+                                        int.tryParse(device
+                                            .extraFields?[
+                                        'pir_cooldown_time']
+                                            ?.toString() ??
+                                            '') ??
+                                            5000;
 
-                                final motionSensor = MotionSensor.fromDevice(
-                                  device,
-                                  ledOnDuration: ledOnDuration,
-                                  pirCooldownTime: pirCooldownTime,
-                                );
+                                    final motionSensor =
+                                    MotionSensor.fromDevice(
+                                      device,
+                                      ledOnDuration:
+                                      ledOnDuration,
+                                      pirCooldownTime:
+                                      pirCooldownTime,
+                                    );
 
-                                return ExpansionTile(
-                                  leading: Icon(getDeviceIcon(device.type), color: primaryColor),
-                                  title: Text(
-                                    device.name,
+                                    return ExpansionTile(
+                                      leading: Icon(
+                                          getDeviceIcon(
+                                              device.type),
+                                          color: primaryColor),
+                                      title: Text(
+                                        device.name,
+                                        style:
+                                        const TextStyle(
+                                          color: textColor,
+                                          fontSize: 16.0,
+                                          fontWeight:
+                                          FontWeight.w700,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        'Port: ${device.port}, status: ${device.status ?? 'off'}',
+                                        style:
+                                        const TextStyle(
+                                          color: textColor,
+                                          fontSize: 14.0,
+                                          fontWeight:
+                                          FontWeight.w400,
+                                        ),
+                                      ),
+                                      children: [
+                                        MotionSensorWidget(
+                                          motionSensor:
+                                          motionSensor,
+                                          userId:
+                                          widget.userId,
+                                          devicesBloc:
+                                          bloc,
+                                        ),
+                                      ],
+                                    );
+                                  } else {
+                                    return ListTile(
+                                      leading: Icon(
+                                          getDeviceIcon(
+                                              device.type),
+                                          color: primaryColor),
+                                      title: Text(
+                                        device.name,
+                                        style:
+                                        const TextStyle(
+                                          color: textColor,
+                                          fontSize: 16.0,
+                                          fontWeight:
+                                          FontWeight.w700,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        'Port: ${device.port}, status: ${device.status ?? 'off'}',
+                                        style:
+                                        const TextStyle(
+                                          color: textColor,
+                                          fontSize: 14.0,
+                                          fontWeight:
+                                          FontWeight.w400,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }).toList(),
+                              );
+                            } else if (state is DevicesError) {
+                              return ListTile(
+                                title: Text('Błąd: ${state.message}',
                                     style: const TextStyle(
-                                      color: textColor,
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    'Port: ${device.port}, status: ${device.status ?? 'off'}',
-                                    style: const TextStyle(
-                                      color: textColor,
-                                      fontSize: 14.0,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                  children: [
-                                    MotionSensorWidget(
-                                      motionSensor: motionSensor,
-                                      userId: widget.userId,
-                                      devicesBloc: bloc,
-                                    ),
-                                  ],
-                                );
-                              } else {
-                                return ListTile(
-                                  leading: Icon(getDeviceIcon(device.type), color: primaryColor),
-                                  title: Text(
-                                    device.name,
-                                    style: const TextStyle(
-                                      color: textColor,
-                                      fontSize: 16.0,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    'Port: ${device.port}, status: ${device.status ?? 'off'}',
-                                    style: const TextStyle(
-                                      color: textColor,
-                                      fontSize: 14.0,
-                                      fontWeight: FontWeight.w400,
-                                    ),
-                                  ),
-                                );
-                              }
-                            }).toList(),
-                          );
-                        } else if (state is DevicesError) {
-                          return ListTile(
-                            title: Text('Błąd: ${state.message}', style: const TextStyle(color: textColor)),
-                          );
-                        }
-                        return const SizedBox();
-                      },
-                    );
-                  }).toList(),
+                                        color: textColor)),
+                              );
+                            }
+                            return const SizedBox();
+                          },
+                        );
+                      }).toList();
+                    }
+                  }(),
                 ),
               ),
             );
@@ -288,3 +361,4 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 }
+
